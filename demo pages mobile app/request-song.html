@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+:root{
+--bg:#0A0A0C;
+--surface:#151518;
+--accent:#6F8CFF;
+--text:#F2F2F7;
+--muted:#9CA3AF;
+}
+
+body{
+margin:0;
+background:#111;
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+font-family:Inter,sans-serif;
+}
+
+/* PHONE */
+
+.phone{
+width:390px;
+height:800px;
+background:black;
+border-radius:48px;
+padding:14px;
+box-shadow:0 40px 80px rgba(0,0,0,0.8);
+}
+
+.screen{
+width:100%;
+height:100%;
+background:var(--bg);
+border-radius:36px;
+overflow:hidden;
+position:relative;
+display:flex;
+flex-direction:column;
+}
+
+.status{
+height:40px;
+display:flex;
+align-items:center;
+padding:0 18px;
+font-size:14px;
+color:var(--muted);
+}
+
+.content{
+flex:1;
+overflow-y:auto;
+padding:20px 20px 200px;
+color:var(--text);
+}
+
+/* HEADER */
+
+.header{
+margin-bottom:30px;
+}
+
+.header h1{
+font-size:22px;
+font-weight:600;
+}
+
+.header p{
+font-size:14px;
+color:var(--muted);
+margin-top:6px;
+}
+
+/* INPUT */
+
+.input-group{
+margin-bottom:22px;
+}
+
+.label{
+font-size:13px;
+color:var(--muted);
+margin-bottom:8px;
+display:block;
+}
+
+.input{
+width:100%;
+background:var(--surface);
+border:none;
+border-radius:18px;
+padding:14px 16px;
+color:var(--text);
+font-size:14px;
+outline:none;
+}
+
+.textarea{
+height:90px;
+resize:none;
+}
+
+/* BUTTON */
+
+.submit-btn{
+margin-top:20px;
+width:100%;
+padding:16px;
+border:none;
+border-radius:22px;
+background:var(--accent);
+color:white;
+font-weight:600;
+font-size:15px;
+cursor:pointer;
+}
+
+/* MINI PLAYER */
+
+.mini-player{
+position:absolute;
+bottom:72px;
+left:16px;
+right:16px;
+background:rgba(21,21,24,0.95);
+backdrop-filter:blur(20px);
+border-radius:24px;
+padding:14px 16px;
+display:flex;
+align-items:center;
+gap:12px;
+box-shadow:0 20px 60px rgba(0,0,0,0.6);
+}
+
+.mini-art{
+width:46px;
+height:46px;
+background:#333;
+border-radius:14px;
+}
+
+.mini-info{
+flex:1;
+}
+
+.mini-title{
+font-size:14px;
+font-weight:600;
+}
+
+.mini-artist{
+font-size:12px;
+color:var(--muted);
+}
+
+.play-btn{
+width:38px;
+height:38px;
+border-radius:50%;
+background:var(--accent);
+}
+
+/* TAB BAR */
+
+.tab-bar{
+position:absolute;
+bottom:0;
+width:100%;
+height:72px;
+background:rgba(21,21,24,0.95);
+backdrop-filter:blur(20px);
+display:flex;
+justify-content:space-around;
+align-items:center;
+font-size:12px;
+}
+
+.tab{
+color:var(--muted);
+}
+
+.tab.active{
+color:var(--accent);
+}
+</style>
+</head>
+
+<body>
+
+<div class="phone">
+<div class="screen">
+
+<div class="status">9:41</div>
+
+<div class="content">
+
+<div class="header">
+<h1>Request a Song</h1>
+<p>Can’t find something? Send it to us.</p>
+</div>
+
+<div class="input-group">
+<label class="label">Song Name</label>
+<input class="input" placeholder="Enter song title">
+</div>
+
+<div class="input-group">
+<label class="label">Artist (Optional)</label>
+<input class="input" placeholder="Artist name">
+</div>
+
+<div class="input-group">
+<label class="label">Playlist Link (Spotify / Apple / YouTube)</label>
+<input class="input" placeholder="Paste playlist link">
+</div>
+
+<div class="input-group">
+<label class="label">Notes</label>
+<textarea class="input textarea" placeholder="Anything we should know?"></textarea>
+</div>
+
+<button class="submit-btn">Submit Request</button>
+
+</div>
+
+<div class="mini-player">
+<div class="mini-art"></div>
+<div class="mini-info">
+<div class="mini-title">Let Down</div>
+<div class="mini-artist">Radiohead</div>
+</div>
+<div class="play-btn"></div>
+</div>
+
+<div class="tab-bar">
+<div class="tab">Home</div>
+<div class="tab">Search</div>
+<div class="tab">Library</div>
+<div class="tab active">Request</div>
+<div class="tab">Profile</div>
+</div>
+
+</div>
+</div>
+
+</body>
+</html>

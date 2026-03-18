@@ -1,0 +1,5 @@
+Both apps have been successfully built and rebranded to KREW.
+
+📦 Your Artifacts
+Desktop Installer: c:\krewv1\desktop-main\dist\KREW Setup 1.0.0.exe
+Mobile APK: c:\krewv1\krew-mobile-cap\android\app\build\outputs\apk\debug\app-debug.apk

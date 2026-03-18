@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Krew - Feature Posts V2</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #050505;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 100px;
+            padding: 100px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .slide {
+            width: 1080px;
+            height: 1080px;
+            position: relative;
+            overflow: hidden;
+            flex-shrink: 0;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+        }
+
+        .glow {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(150px);
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+
+        .float {
+            animation: float 3s ease-in-out infinite;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- SLIDE 1: Hero - Clean Impact -->
+    <div class="slide bg-black text-white p-[100px] flex flex-col justify-between">
+        <img src="yeah.svg" class="absolute top-10 left-10 w-12 opacity-50 grayscale" alt="Krew">
+
+        <div class="mt-8">
+            <p class="text-purple-400 text-3xl font-bold mb-6 tracking-wide">Music streaming. Reimagined.</p>
+            <h1 class="text-[9rem] font-black tracking-tighter mb-8 leading-[0.85]">
+                Listen.<br />Together.
+            </h1>
+            <p class="text-4xl text-gray-400 font-medium leading-tight max-w-4xl">
+                Real-time jam sessions. Instant imports. Your music, your way.
+            </p>
+        </div>
+
+        <div class="space-y-8 text-3xl font-bold">
+            <div class="flex items-center gap-8">
+                <span
+                    class="w-16 h-16 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center text-3xl shrink-0">🔥</span>
+                <span>Live Jam • Listen with friends in sync</span>
+            </div>
+            <div class="flex items-center gap-8">
+                <span
+                    class="w-16 h-16 rounded-full bg-gradient-to-br from-blue-600 to-cyan-600 flex items-center justify-center text-3xl shrink-0">⚡</span>
+                <span>Import • Spotify playlists in seconds</span>
+            </div>
+            <div class="flex items-center gap-8">
+                <span
+                    class="w-16 h-16 rounded-full bg-gradient-to-br from-green-600 to-emerald-600 flex items-center justify-center text-3xl shrink-0">🎧</span>
+                <span>Artists • Upload & share your music</span>
+            </div>
+        </div>
+
+        <div class="flex justify-start pt-12">
+            <div
+                class="bg-white text-black text-4xl font-black py-8 px-20 rounded-full hover:scale-105 transition-transform cursor-pointer">
+                Start Listening Free
+            </div>
+        </div>
+    </div>
+
+
+    <!-- SLIDE 2: Live Jam Focus -->
+    <div
+        class="slide relative bg-gradient-to-br from-purple-950 via-black to-black text-white flex flex-col items-center justify-center p-[100px]">
+        <div
+            class="glow bg-purple-600 w-[900px] h-[900px] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-20">
+        </div>
+
+        <img src="yeah.svg" class="absolute top-10 left-10 w-12 opacity-30 grayscale invert" alt="Krew">
+
+        <div class="relative z-10 text-center mb-16">
+            <div class="text-purple-400 text-3xl font-bold mb-4 tracking-widest">INTRODUCING</div>
+            <h1
+                class="text-[10rem] font-black leading-none mb-6 bg-gradient-to-r from-purple-400 via-pink-400 to-purple-400 bg-clip-text text-transparent">
+                LIVE JAM
+            </h1>
+            <p class="text-4xl text-gray-300 font-bold max-w-4xl mx-auto leading-tight">
+                Listen to the same song at the same time. Vote to skip. Chat while you vibe.
+            </p>
+        </div>
+
+        <div class="relative z-10 grid grid-cols-3 gap-6 w-full">
+            <div class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-10 text-center float"
+                style="animation-delay: 0s;">
+                <div class="text-5xl mb-4">🎵</div>
+                <div class="text-2xl font-bold mb-2">Sync Playback</div>
+                <div class="text-lg text-gray-400">Everyone hears the same thing</div>
+            </div>
+
+            <div class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-10 text-center float"
+                style="animation-delay: 0.2s;">
+                <div class="text-5xl mb-4">🗳️</div>
+                <div class="text-2xl font-bold mb-2">Vote Skip</div>
+                <div class="text-lg text-gray-400">Democratic song control</div>
+            </div>
+
+            <div class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-10 text-center float"
+                style="animation-delay: 0.4s;">
+                <div class="text-5xl mb-4">💬</div>
+                <div class="text-2xl font-bold mb-2">Live Chat</div>
+                <div class="text-lg text-gray-400">React & vibe together</div>
+            </div>
+        </div>
+
+        <div class="relative z-10 mt-16">
+            <div
+                class="bg-gradient-to-r from-purple-600 to-pink-600 text-white text-4xl font-black py-8 px-20 rounded-full hover:scale-105 transition-transform cursor-pointer">
+                Create a Jam Session
+            </div>
+        </div>
+    </div>
+
+
+    <!-- SLIDE 3: Features Grid - Modern -->
+    <div class="slide bg-zinc-950 text-white p-[100px] flex flex-col relative">
+        <img src="yeah.svg" class="absolute top-10 left-10 w-12 opacity-50 grayscale" alt="Krew">
+
+        <h1 class="text-7xl font-black text-center mb-10 tracking-tight leading-none">
+            Everything you need.<br />
+            <span class="text-purple-400">Nothing you don't.</span>
+        </h1>
+
+        <div class="grid grid-cols-2 gap-6 flex-1 h-full">
+            <!-- Import Feature -->
+            <div
+                class="bg-gradient-to-br from-blue-900/40 to-cyan-900/40 rounded-[2.5rem] p-8 flex flex-col justify-between border border-blue-500/20">
+                <div>
+                    <span
+                        class="w-14 h-14 rounded-full bg-blue-500/20 flex items-center justify-center text-3xl mb-5 inline-flex">📥</span>
+                    <h2 class="text-4xl font-bold mb-3">Spotify Import</h2>
+                    <p class="text-xl text-blue-200 leading-snug">Bring your playlists over. Turn-key.</p>
+                </div>
+            </div>
+
+            <!-- Artist Uploads -->
+            <div
+                class="bg-gradient-to-br from-purple-900/40 to-pink-900/40 rounded-[2.5rem] p-8 flex flex-col justify-between border border-purple-500/20">
+                <div>
+                    <span
+                        class="w-14 h-14 rounded-full bg-purple-500/20 flex items-center justify-center text-3xl mb-5 inline-flex">🎤</span>
+                    <h2 class="text-4xl font-bold mb-3">For Artists</h2>
+                    <p class="text-xl text-purple-200 leading-snug">Upload & verify. Build your fanbase.</p>
+                </div>
+            </div>
+
+            <!-- Stats & Capsules -->
+            <div
+                class="bg-gradient-to-br from-green-900/40 to-emerald-900/40 rounded-[2.5rem] p-8 flex flex-col justify-between border border-green-500/20">
+                <div>
+                    <span
+                        class="w-14 h-14 rounded-full bg-green-500/20 flex items-center justify-center text-3xl mb-5 inline-flex">📊</span>
+                    <h2 class="text-4xl font-bold mb-3">Your Stats</h2>
+                    <p class="text-xl text-green-200 leading-snug">Top songs, artists. Your daily capsule.</p>
+                </div>
+            </div>
+
+            <!-- Smart Features -->
+            <div
+                class="bg-gradient-to-br from-orange-900/40 to-red-900/40 rounded-[2.5rem] p-8 flex flex-col justify-between border border-orange-500/20">
+                <div>
+                    <span
+                        class="w-14 h-14 rounded-full bg-orange-500/20 flex items-center justify-center text-3xl mb-5 inline-flex">🧠</span>
+                    <h2 class="text-4xl font-bold mb-3">Smart Queue</h2>
+                    <p class="text-xl text-orange-200 leading-snug">AI autoplay & shuffle.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 1: Hero Hook - Premium Intro -->
+    <div class="slide relative bg-black text-white flex flex-col justify-center p-[100px] overflow-hidden">
+
+        <!-- Glow -->
+        <div class="glow bg-purple-600 w-[900px] h-[900px] -top-1/2 -right-1/2 opacity-20"></div>
+        <div class="glow bg-blue-600 w-[700px] h-[700px] bottom-[-200px] left-[-200px] opacity-15"></div>
+
+        <img src="yeah.svg" class="absolute top-10 left-10 w-12 opacity-50 grayscale" alt="Krew">
+
+        <div class="relative z-10 max-w-5xl">
+
+            <p class="text-purple-400 text-3xl font-bold tracking-widest mb-6 uppercase">
+                Music without limits
+            </p>
+
+            <h1 class="text-[10rem] font-black leading-[0.85] tracking-tighter mb-10">
+                This is<br>
+                streaming<br>
+                done right.
+            </h1>
+
+            <p class="text-4xl text-gray-400 leading-snug mb-20 max-w-4xl">
+                No ads. No clutter. Just high-quality music, real-time listening, and features built for real fans.
+            </p>
+
+            <div class="flex gap-8 text-3xl font-bold text-gray-300">
+                <div class="flex items-center gap-4">
+                    🚫 <span>No ads</span>
+                </div>
+                <div class="flex items-center gap-4">
+                    ⚡ <span>Instant play</span>
+                </div>
+                <div class="flex items-center gap-4">
+                    🎧 <span>Pure sound</span>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="relative z-10 mt-24">
+            <div
+                class="bg-white text-black text-4xl font-black py-8 px-20 rounded-full hover:scale-105 transition-transform inline-block cursor-pointer">
+                Start Listening Free
+            </div>
+        </div>
+
+    </div>
+
+    <!-- SLIDE 4: Social Proof / Call to Action -->
+    <div class="slide relative bg-black text-white flex flex-col items-center justify-center text-center p-[100px]">
+        <div class="glow bg-blue-600 w-[700px] h-[700px] top-1/4 left-1/4 opacity-15"></div>
+        <div class="glow bg-purple-600 w-[600px] h-[600px] bottom-1/4 right-1/4 opacity-15"></div>
+
+        <div class="relative z-10 w-full">
+            <img src="yeah.svg" class="absolute top-10 left-10 w-12 opacity-50 grayscale" alt="Krew">
+
+            <div class="mb-16">
+                <p class="text-purple-400 text-3xl font-bold mb-6 tracking-widest">WHY KREW?</p>
+                <h1 class="text-[9rem] font-black leading-none mb-10">
+                    Built by<br />
+                    music lovers.
+                </h1>
+            </div>
+
+
+            <div class="grid grid-cols-3 gap-8 mb-20">
+                <div class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-10">
+                    <div class="text-6xl font-black text-purple-400 mb-4">0</div>
+                    <div class="text-2xl font-bold">Ads</div>
+                    <div class="text-lg text-gray-400 mt-2">Not now. Not ever.</div>
+                </div>
+
+                <div class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-10">
+                    <div class="text-6xl font-black text-blue-400 mb-4">100%</div>
+                    <div class="text-2xl font-bold">Free</div>
+                    <div class="text-lg text-gray-400 mt-2">All features unlocked</div>
+                </div>
+
+                <div class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-10">
+                    <div class="text-6xl font-black text-pink-400 mb-4">∞</div>
+                    <div class="text-2xl font-bold">Possibilities</div>
+                    <div class="text-lg text-gray-400 mt-2">New features weekly</div>
+                </div>
+            </div>
+
+            <div>
+                <div
+                    class="bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 text-white text-5xl font-black py-10 px-28 rounded-full hover:scale-105 transition-transform cursor-pointer inline-block mb-6">
+                    Join Krew Free
+                </div>
+                <p class="text-xl text-gray-500">No credit card. No catches. Just music.</p>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blind Love - Satyam Tiwari | Stream on Krew</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #050505;
+            color: white;
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background-image: radial-gradient(circle at 50% 50%, #1a1a1a 0%, #000 100%);
+        }
+
+        #insta-container {
+            width: 1080px;
+            height: 1080px;
+            background: radial-gradient(circle at top, #111 0%, #000 60%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: Arial, sans-serif;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+
+        .glow {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(150px);
+            opacity: 0.5;
+            z-index: 0;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0px) rotate(0deg);
+            }
+
+            50% {
+                transform: translateY(-20px) rotate(2deg);
+            }
+        }
+
+        .cover-art {
+            animation: float 6s ease-in-out infinite;
+            box-shadow: 0 0 80px rgba(168, 85, 247, 0.4);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="insta-container">
+
+        <!-- Background Glows -->
+        <div class="glow bg-purple-600 w-[800px] h-[800px] top-[-200px] left-[-200px]"></div>
+        <div class="glow bg-blue-600 w-[700px] h-[700px] bottom-[-100px] right-[-100px]"></div>
+
+        <!-- Main Content -->
+        <div class="relative z-10 flex flex-col items-center text-center p-8 w-full">
+
+            <!-- Logo -->
+            <div class="mb-10 opacity-80">
+                <img src="yeah.svg" class="w-20 mx-auto grayscale opacity-50" alt="Krew">
+            </div>
+
+            <!-- Cover Art -->
+            <div class="relative mb-10 group">
+                <div
+                    class="absolute inset-0 bg-purple-500 rounded-2xl blur-3xl opacity-20 group-hover:opacity-40 transition-opacity duration-500">
+                </div>
+                <img src="satyam_cover.png"
+                    class="cover-art w-[500px] h-[500px] object-cover rounded-3xl border-4 border-white/10 relative z-10"
+                    alt="Blind Love Cover">
+            </div>
+
+            <!-- Text -->
+            <div class="space-y-6 mb-16">
+                <h2 class="text-purple-400 font-bold tracking-[0.5em] text-xl uppercase">New Release</h2>
+                <h1
+                    class="text-9xl font-black tracking-tighter leading-none bg-gradient-to-r from-white via-purple-100 to-gray-400 bg-clip-text text-transparent scale-y-90">
+                    BLIND LOVE
+                </h1>
+                <p class="text-4xl text-gray-400 font-medium tracking-wide">Satyam Tiwari</p>
+            </div>
+
+            <!-- CTA Buttons -->
+            <div class="flex flex-col gap-6 w-full max-w-md">
+                <div
+                    class="bg-white text-black text-3xl font-black py-6 px-12 rounded-full text-center shadow-[0_0_50px_rgba(255,255,255,0.4)] tracking-tight">
+                    Listen on Krew
+                </div>
+            </div>
+
+        </div>
+
+    </div> <!-- End insta-container -->
+
+</body>
+
+</html>

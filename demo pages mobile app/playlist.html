@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg: #0A0A0C;
+            --surface: #151518;
+            --accent: #6F8CFF;
+            --text: #F2F2F7;
+            --muted: #9CA3AF;
+        }
+
+        body {
+            margin: 0;
+            background: #111;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: Inter, sans-serif;
+        }
+
+        .phone {
+            width: 390px;
+            height: 800px;
+            background: black;
+            border-radius: 48px;
+            padding: 14px;
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.8);
+        }
+
+        .screen {
+            width: 100%;
+            height: 100%;
+            background: var(--bg);
+            border-radius: 36px;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .status {
+            height: 40px;
+            display: flex;
+            align-items: center;
+            padding: 0 18px;
+            font-size: 14px;
+            color: var(--muted);
+        }
+
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 20px 200px;
+            color: var(--text);
+        }
+
+        /* HEADER */
+
+        .playlist-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .cover {
+            width: 220px;
+            height: 220px;
+            border-radius: 24px;
+            margin: 0 auto 18px;
+            background: #222;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+        }
+
+        .playlist-title {
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .playlist-meta {
+            font-size: 14px;
+            color: var(--muted);
+        }
+
+        /* ACTION BUTTONS */
+
+        .actions {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-top: 18px;
+        }
+
+        .primary-btn {
+            padding: 12px 26px;
+            border-radius: 22px;
+            border: none;
+            background: var(--accent);
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .secondary-btn {
+            padding: 12px 26px;
+            border-radius: 22px;
+            border: none;
+            background: var(--surface);
+            color: var(--text);
+            cursor: pointer;
+        }
+
+        /* TRACK LIST */
+
+        .track {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .track-number {
+            width: 20px;
+            font-size: 14px;
+            color: var(--muted);
+        }
+
+        .track-art {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: #222;
+        }
+
+        .track-info {
+            flex: 1;
+        }
+
+        .track-title {
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        .track-artist {
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 3px;
+        }
+
+        .track-duration {
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        /* MINI PLAYER */
+
+        .mini-player {
+            position: absolute;
+            bottom: 72px;
+            left: 16px;
+            right: 16px;
+            background: rgba(21, 21, 24, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+        }
+
+        .mini-art {
+            width: 46px;
+            height: 46px;
+            background: #333;
+            border-radius: 14px;
+        }
+
+        .mini-info {
+            flex: 1;
+        }
+
+        .mini-title {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .mini-artist {
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .play-btn {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: var(--accent);
+        }
+
+        /* TAB BAR */
+
+        .tab-bar {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 72px;
+            background: rgba(21, 21, 24, 0.95);
+            backdrop-filter: blur(20px);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            font-size: 12px;
+        }
+
+        .tab {
+            color: var(--muted);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="phone">
+        <div class="screen">
+
+            <div class="status">9:41</div>
+
+            <div class="content">
+
+                <div class="playlist-header">
+                    <div class="cover"></div>
+                    <div class="playlist-title">Late Night Energy</div>
+                    <div class="playlist-meta">By Amaan • 24 songs • 1 hr 32 min</div>
+
+                    <div class="actions">
+                        <button class="primary-btn">Play</button>
+                        <button class="secondary-btn">Shuffle</button>
+                    </div>
+                </div>
+
+                <!-- TRACKS -->
+
+                <div class="track">
+                    <div class="track-number">1</div>
+                    <div class="track-art"></div>
+                    <div class="track-info">
+                        <div class="track-title">Let Down</div>
+                        <div class="track-artist">Radiohead</div>
+                    </div>
+                    <div class="track-duration">4:59</div>
+                </div>
+
+                <div class="track">
+                    <div class="track-number">2</div>
+                    <div class="track-art"></div>
+                    <div class="track-info">
+                        <div class="track-title">505</div>
+                        <div class="track-artist">Arctic Monkeys</div>
+                    </div>
+                    <div class="track-duration">4:12</div>
+                </div>
+
+                <div class="track">
+                    <div class="track-number">3</div>
+                    <div class="track-art"></div>
+                    <div class="track-info">
+                        <div class="track-title">All Of Me</div>
+                        <div class="track-artist">Nao</div>
+                    </div>
+                    <div class="track-duration">3:45</div>
+                </div>
+
+            </div>
+
+            <div class="mini-player">
+                <div class="mini-art"></div>
+                <div class="mini-info">
+                    <div class="mini-title">Let Down</div>
+                    <div class="mini-artist">Radiohead</div>
+                </div>
+                <div class="play-btn"></div>
+            </div>
+
+            <div class="tab-bar">
+                <div class="tab">Home</div>
+                <div class="tab">Search</div>
+                <div class="tab">Library</div>
+                <div class="tab">Request</div>
+                <div class="tab">Profile</div>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+
+</html>

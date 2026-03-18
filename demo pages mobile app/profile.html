@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+:root{
+--bg:#0A0A0C;
+--surface:#151518;
+--accent:#6F8CFF;
+--text:#F2F2F7;
+--muted:#9CA3AF;
+}
+
+body{
+margin:0;
+background:#111;
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+font-family:Inter,sans-serif;
+}
+
+/* PHONE */
+
+.phone{
+width:390px;
+height:800px;
+background:black;
+border-radius:48px;
+padding:14px;
+box-shadow:0 40px 80px rgba(0,0,0,0.8);
+}
+
+.screen{
+width:100%;
+height:100%;
+background:var(--bg);
+border-radius:36px;
+overflow:hidden;
+position:relative;
+display:flex;
+flex-direction:column;
+}
+
+.status{
+height:40px;
+display:flex;
+align-items:center;
+padding:0 18px;
+font-size:14px;
+color:var(--muted);
+}
+
+.content{
+flex:1;
+overflow-y:auto;
+padding:20px 20px 200px;
+color:var(--text);
+}
+
+/* PROFILE HEADER */
+
+.profile-header{
+display:flex;
+align-items:center;
+gap:18px;
+margin-bottom:30px;
+}
+
+.avatar{
+width:90px;
+height:90px;
+border-radius:50%;
+background:linear-gradient(
+135deg,
+rgba(111,140,255,0.5),
+rgba(111,140,255,0.1)
+);
+border:2px solid rgba(111,140,255,0.6);
+}
+
+.profile-info h1{
+font-size:20px;
+margin-bottom:6px;
+}
+
+.profile-sub{
+font-size:13px;
+color:var(--muted);
+}
+
+/* STAT GRID */
+
+.stats{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:16px;
+margin-bottom:30px;
+}
+
+.stat-card{
+background:var(--surface);
+border-radius:22px;
+padding:18px;
+}
+
+.stat-title{
+font-size:12px;
+color:var(--muted);
+margin-bottom:6px;
+}
+
+.stat-value{
+font-size:16px;
+font-weight:600;
+}
+
+/* PLAYLIST PREVIEW */
+
+.section-title{
+font-size:16px;
+font-weight:600;
+margin-bottom:14px;
+}
+
+.horizontal{
+display:flex;
+gap:14px;
+overflow-x:auto;
+margin-bottom:30px;
+}
+
+.playlist{
+min-width:110px;
+}
+
+.playlist-art{
+height:110px;
+background:#222;
+border-radius:18px;
+margin-bottom:6px;
+}
+
+.playlist-title{
+font-size:13px;
+}
+
+/* BUTTONS */
+
+.button{
+width:100%;
+padding:14px;
+border-radius:22px;
+border:none;
+background:var(--accent);
+color:white;
+font-weight:600;
+margin-bottom:14px;
+cursor:pointer;
+}
+
+.secondary{
+background:var(--surface);
+color:var(--muted);
+}
+
+/* MINI PLAYER */
+
+.mini-player{
+position:absolute;
+bottom:72px;
+left:16px;
+right:16px;
+background:rgba(21,21,24,0.95);
+backdrop-filter:blur(20px);
+border-radius:24px;
+padding:14px 16px;
+display:flex;
+align-items:center;
+gap:12px;
+box-shadow:0 20px 60px rgba(0,0,0,0.6);
+}
+
+.mini-art{
+width:46px;
+height:46px;
+background:#333;
+border-radius:14px;
+}
+
+.mini-info{
+flex:1;
+}
+
+.mini-title{
+font-size:14px;
+font-weight:600;
+}
+
+.mini-artist{
+font-size:12px;
+color:var(--muted);
+}
+
+.play-btn{
+width:38px;
+height:38px;
+border-radius:50%;
+background:var(--accent);
+}
+
+/* TAB BAR */
+
+.tab-bar{
+position:absolute;
+bottom:0;
+width:100%;
+height:72px;
+background:rgba(21,21,24,0.95);
+backdrop-filter:blur(20px);
+display:flex;
+justify-content:space-around;
+align-items:center;
+font-size:12px;
+}
+
+.tab{
+color:var(--muted);
+}
+
+.tab.active{
+color:var(--accent);
+}
+</style>
+</head>
+
+<body>
+
+<div class="phone">
+<div class="screen">
+
+<div class="status">9:41</div>
+
+<div class="content">
+
+<div class="profile-header">
+<div class="avatar"></div>
+<div class="profile-info">
+<h1>Amaan</h1>
+<div class="profile-sub">🔥 7 Day Streak</div>
+<div class="profile-sub">Joined March 2026</div>
+</div>
+</div>
+
+<!-- STATS -->
+
+<div class="stats">
+<div class="stat-card">
+<div class="stat-title">Lifetime Minutes</div>
+<div class="stat-value">14,320</div>
+</div>
+
+<div class="stat-card">
+<div class="stat-title">Top Genre</div>
+<div class="stat-value">Indie Rock</div>
+</div>
+
+<div class="stat-card">
+<div class="stat-title">Top Artist</div>
+<div class="stat-value">Radiohead</div>
+</div>
+
+<div class="stat-card">
+<div class="stat-title">Playlists</div>
+<div class="stat-value">8</div>
+</div>
+</div>
+
+<!-- PLAYLIST PREVIEW -->
+
+<div class="section-title">Your Playlists</div>
+
+<div class="horizontal">
+<div class="playlist">
+<div class="playlist-art"></div>
+<div class="playlist-title">Chill Nights</div>
+</div>
+
+<div class="playlist">
+<div class="playlist-art"></div>
+<div class="playlist-title">Gym Mode</div>
+</div>
+
+<div class="playlist">
+<div class="playlist-art"></div>
+<div class="playlist-title">Focus Flow</div>
+</div>
+</div>
+
+<button class="button">Edit Profile</button>
+<button class="button secondary">Logout</button>
+
+</div>
+
+<div class="mini-player">
+<div class="mini-art"></div>
+<div class="mini-info">
+<div class="mini-title">Let Down</div>
+<div class="mini-artist">Radiohead</div>
+</div>
+<div class="play-btn"></div>
+</div>
+
+<div class="tab-bar">
+<div class="tab">Home</div>
+<div class="tab">Search</div>
+<div class="tab">Library</div>
+<div class="tab">Request</div>
+<div class="tab active">Profile</div>
+</div>
+
+</div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --text-primary: #FFFFFF;
+            --text-secondary: rgba(255, 255, 255, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --glass-bg: rgba(255, 255, 255, 0.08);
+            --input-bg: rgba(255, 255, 255, 0.05);
+            --accent-glow: rgba(160, 100, 120, 0.6);
+            --primary-btn-bg: #FFFFFF;
+            --primary-btn-text: #000000;
+        }
+
+        body {
+            margin: 0;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: 'Inter', sans-serif;
+            color: var(--text-primary);
+        }
+
+        /* PHONE CONTAINER */
+        .phone {
+            width: 390px;
+            height: 844px;
+            background: black;
+            border-radius: 48px;
+            padding: 12px;
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.8);
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        /* "iOS 26" DYNAMIC BACKGROUND */
+        .mesh-bg {
+            display: none;
+        }
+
+        .noise-overlay {
+            display: none;
+        }
+
+        .screen {
+            width: 100%;
+            height: 100%;
+            border-radius: 38px;
+            overflow: hidden;
+            position: relative;
+            background: #000000;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 40px 28px;
+            box-sizing: border-box;
+        }
+
+
+
+        /* LOGO */
+
+        .logo {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: -1px;
+            background: linear-gradient(180deg, #fff, #bbb);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            margin-bottom: 40px;
+            font-size: 16px;
+            font-weight: 400;
+        }
+
+        /* INPUT */
+
+        .input-group {
+            margin-bottom: 16px;
+        }
+
+        .input {
+            width: 100%;
+            padding: 18px 20px;
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
+            background: var(--input-bg);
+            backdrop-filter: blur(12px);
+            color: var(--text-primary);
+            font-size: 16px;
+            outline: none;
+            box-sizing: border-box;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        .input:focus {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.05);
+        }
+
+        .input::placeholder {
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        /* BUTTON */
+
+        .primary-btn {
+            margin-top: 24px;
+            width: 100%;
+            padding: 18px;
+            border: none;
+            border-radius: 20px;
+            background: var(--primary-btn-bg);
+            color: var(--primary-btn-text);
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            transition: transform 0.1s;
+        }
+
+        .primary-btn:active {
+            transform: scale(0.98);
+        }
+
+        .link {
+            text-align: center;
+            margin-top: 32px;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .link span {
+            color: var(--text-primary);
+            font-weight: 600;
+            cursor: pointer;
+            margin-left: 4px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="phone">
+        <div class="screen">
+            <div class="mesh-bg"></div>
+            <div class="noise-overlay"></div>
+
+            <div class="logo">Create Account</div>
+            <div class="subtitle">Join the Krew.</div>
+
+            <div class="input-group">
+                <input class="input" placeholder="Username">
+            </div>
+
+            <div class="input-group">
+                <input class="input" placeholder="Email">
+            </div>
+
+            <div class="input-group">
+                <input class="input" placeholder="Password" type="password">
+            </div>
+
+            <div class="input-group">
+                <input class="input" placeholder="Confirm Password" type="password">
+            </div>
+
+            <button class="primary-btn">Register</button>
+
+            <div class="link">
+                Already have an account? <span>Sign In</span>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+
+</html>

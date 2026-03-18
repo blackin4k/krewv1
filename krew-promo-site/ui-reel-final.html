@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Krew Reel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <style>
+        /* ========================================= */
+        /* CSS VARIABLES                            */
+        /* ========================================= */
+        :root {
+            --purple: #b026ff;
+            --purple-dim: rgba(176, 38, 255, 0.5);
+            --purple-glow: rgba(176, 38, 255, 0.15);
+            --teal: rgba(30, 160, 180, 0.10);
+            --text-sub: #777;
+            --text-muted: #555;
+            --card-bg: rgba(30, 30, 30, 0.9);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: #000;
+            font-family: 'DM Sans', system-ui, sans-serif;
+            color: #fff;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        /* ========================================= */
+        /* STAGE — 9:16 Reels (1080×1920)           */
+        /* ========================================= */
+        #stage {
+            width: 1080px;
+            height: 1920px;
+            position: relative;
+            background: #000;
+            overflow: hidden;
+            box-shadow: 0 0 120px #0a0a0a;
+            transform-origin: center center;
+            /* Scale set via JS to fit viewport */
+        }
+
+        /* --- Grain overlay (SVG noise filter) --- */
+        #stage::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            z-index: 9990;
+            pointer-events: none;
+            opacity: 0.035;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+            background-size: 256px 256px;
+        }
+
+        /* --- Vignette --- */
+        #stage::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            z-index: 9991;
+            pointer-events: none;
+            background: radial-gradient(ellipse 70% 65% at 50% 50%, transparent 40%, rgba(0, 0, 0, 0.55) 100%);
+        }
+
+        /* ========================================= */
+        /* BACKGROUND GRADIENTS                     */
+        /* ========================================= */
+        .bg-gradient {
+            position: absolute;
+            width: 1800px;
+            height: 1800px;
+            background: radial-gradient(circle, var(--purple-glow) 0%, transparent 55%);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation: bgPulse 5s infinite alternate ease-in-out;
+            z-index: 0;
+        }
+
+        @keyframes bgPulse {
+            0% {
+                opacity: 0.4;
+                transform: translate(-50%, -50%) scale(1);
+            }
+
+            100% {
+                opacity: 0.7;
+                transform: translate(-50%, -50%) scale(1.15);
+            }
+        }
+
+        .bg-gradient-teal {
+            position: absolute;
+            width: 1400px;
+            height: 1400px;
+            background: radial-gradient(circle, var(--teal) 0%, transparent 60%);
+            top: 20%;
+            left: 65%;
+            transform: translate(-50%, -50%);
+            animation: bgPulseTeal 7s infinite alternate ease-in-out;
+            z-index: 0;
+        }
+
+        @keyframes bgPulseTeal {
+            0% {
+                opacity: 0.5;
+                transform: translate(-50%, -50%) scale(0.95);
+            }
+
+            100% {
+                opacity: 0.9;
+                transform: translate(-50%, -50%) scale(1.2);
+            }
+        }
+
+        /* ========================================= */
+        /* SCENES                                   */
+        /* ========================================= */
+        .scene {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1;
+        }
+
+        .scene.active {
+            opacity: 1;
+        }
+
+        /* ========================================= */
+        /* SCENE 0 — INTRO ICON                     */
+        /* ========================================= */
+        .intro-icon-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .intro-icon {
+            width: 260px;
+            height: 260px;
+            object-fit: contain;
+            opacity: 0;
+            transform: scale(0.5);
+            animation: introReveal 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards 0.2s;
+            filter: drop-shadow(0 0 70px var(--purple-dim));
+        }
+
+        @keyframes introReveal {
+            0% {
+                opacity: 0;
+                transform: scale(0.5);
+            }
+
+            60% {
+                opacity: 1;
+                transform: scale(1.12);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* ========================================= */
+        /* SCENE 1 — LOGO ZOOM                      */
+        /* ========================================= */
+        .logo-container {
+            transform: scale(0.05);
+            opacity: 0;
+            transition: transform 1.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.6s ease-out;
+            text-align: center;
+        }
+
+        .scene.active .logo-container {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        .krew-logo {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 260px;
+            font-weight: 400;
+            /* Bebas Neue is single-weight */
+            background: linear-gradient(135deg, #fff 25%, var(--purple));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 12px;
+            line-height: 0.9;
+        }
+
+        .logo-tagline {
+            font-size: 46px;
+            font-weight: 500;
+            color: var(--text-sub);
+            margin-top: 40px;
+            opacity: 0;
+            transform: translateY(18px);
+            /* animation is triggered via JS class toggle for loop-safe re-trigger */
+        }
+
+        .logo-tagline.visible {
+            animation: fadeSlideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes fadeSlideUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Logo shake */
+        @keyframes shake {
+            0% {
+                transform: scale(1) rotate(0);
+            }
+
+            15% {
+                transform: scale(1.04) rotate(0.5deg);
+            }
+
+            30% {
+                transform: scale(1.01) rotate(-0.3deg);
+            }
+
+            50% {
+                transform: scale(1.02) rotate(0.2deg);
+            }
+
+            75% {
+                transform: scale(1.005) rotate(-0.1deg);
+            }
+
+            100% {
+                transform: scale(1) rotate(0);
+            }
+        }
+
+        .logo-container.shake {
+            animation: shake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) forwards;
+        }
+
+        /* ========================================= */
+        /* SCENE 2 — COVERS BELT                    */
+        /* ========================================= */
+        .covers-wrapper {
+            position: absolute;
+            left: 0;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 40px;
+            transform: translateX(100px);
+        }
+
+        .cover-card {
+            width: 350px;
+            height: 350px;
+            border-radius: 28px;
+            overflow: hidden;
+            box-shadow: 0 30px 70px rgba(0, 0, 0, 0.85);
+            flex-shrink: 0;
+            transition: filter 0.2s ease, transform 0.2s ease;
+        }
+
+        .cover-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .cover-card.fast {
+            filter: blur(4px) brightness(0.85);
+            transform: scale(0.96);
+        }
+
+        .belt-text {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 100px;
+            font-weight: 400;
+            text-align: center;
+            position: absolute;
+            bottom: 300px;
+            line-height: 1.05;
+            letter-spacing: 4px;
+            text-shadow: 0 8px 40px rgba(0, 0, 0, 0.9), 0 0 80px rgba(0, 0, 0, 0.6);
+            z-index: 10;
+            color: #fff;
+        }
+
+        .belt-text .highlight {
+            color: var(--purple);
+        }
+
+        /* ========================================= */
+        /* SCENE 3 — LYRIC SEARCH                   */
+        /* ========================================= */
+        .search-container {
+            width: 860px;
+        }
+
+        .search-bar {
+            background: var(--card-bg);
+            border: 2px solid #3a3a3a;
+            border-radius: 36px;
+            padding: 42px 50px;
+            font-size: 46px;
+            font-family: 'DM Sans', sans-serif;
+            color: #fff;
+            font-weight: 500;
+            margin-bottom: 60px;
+            min-height: 148px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+            position: relative;
+        }
+
+        /* Cursor blink appended via JS as a span */
+        .cursor {
+            display: inline-block;
+            width: 3px;
+            height: 52px;
+            background: var(--purple);
+            margin-left: 4px;
+            border-radius: 2px;
+            animation: cursorBlink 1s step-end infinite;
+            vertical-align: middle;
+        }
+
+        @keyframes cursorBlink {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0;
+            }
+        }
+
+        .search-result {
+            display: flex;
+            align-items: center;
+            gap: 42px;
+            background: rgba(255, 255, 255, 0.045);
+            padding: 34px 38px;
+            border-radius: 40px;
+            opacity: 0;
+            transform: translateY(36px) scale(0.96);
+            transition: all 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+            border: 1.5px solid rgba(255, 255, 255, 0.09);
+        }
+
+        .search-result.show {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        .res-img {
+            width: 210px;
+            height: 210px;
+            border-radius: 22px;
+            object-fit: cover;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+        }
+
+        .res-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 72px;
+            letter-spacing: 2px;
+        }
+
+        .res-artist {
+            font-size: 40px;
+            color: #999;
+            margin-top: 4px;
+            font-weight: 500;
+        }
+
+        .sub-hint {
+            margin-top: 100px;
+            color: var(--text-muted);
+            font-size: 36px;
+            font-weight: 500;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        /* ========================================= */
+        /* SCENE 4 — JAMS                           */
+        /* ========================================= */
+        .jams-container {
+            text-align: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        .jams-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 180px;
+            font-weight: 400;
+            letter-spacing: 14px;
+            background: linear-gradient(135deg, #ff6b6b 0%, #feca57 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            opacity: 0;
+            transform: translateY(40px);
+        }
+
+        .scene.active .jams-title {
+            animation: slideUp 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards 0.1s;
+        }
+
+        .jams-subtitle {
+            font-size: 48px;
+            color: var(--text-sub);
+            margin-top: 36px;
+            font-weight: 500;
+            opacity: 0;
+        }
+
+        .scene.active .jams-subtitle {
+            animation: fadeIn 0.5s ease-out forwards 0.45s;
+        }
+
+        /* ========================================= */
+        /* SCENE 5 — SOUND CAPSULE                  */
+        /* ========================================= */
+        .capsule-container {
+            text-align: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        .capsule-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 120px;
+            font-weight: 400;
+            letter-spacing: 6px;
+            line-height: 1.0;
+            opacity: 0;
+            transform: translateY(30px);
+            color: #fff;
+        }
+
+        .scene.active .capsule-title {
+            animation: slideUp 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards 0.1s;
+        }
+
+        .capsule-highlight {
+            background: linear-gradient(135deg, #a29bfe 0%, #6c5ce7 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .capsule-subtitle {
+            font-size: 42px;
+            color: var(--text-muted);
+            margin-top: 44px;
+            font-weight: 500;
+            opacity: 0;
+        }
+
+        .scene.active .capsule-subtitle {
+            animation: fadeIn 0.5s ease-out forwards 0.5s;
+        }
+
+        /* ========================================= */
+        /* SCENE 6 — FREE                           */
+        /* ========================================= */
+        .free-scene-bg {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .free-impact-flash {
+            width: 900px;
+            height: 900px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(176, 38, 255, 0.35) 0%, transparent 70%);
+            opacity: 0;
+            transform: scale(0);
+        }
+
+        .scene.active .free-impact-flash {
+            animation: impactPulse 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards 0.25s;
+        }
+
+        @keyframes impactPulse {
+            0% {
+                opacity: 0;
+                transform: scale(0);
+            }
+
+            35% {
+                opacity: 0.9;
+                transform: scale(0.9);
+            }
+
+            100% {
+                opacity: 0;
+                transform: scale(2.2);
+            }
+        }
+
+        .free-text {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 240px;
+            font-weight: 400;
+            line-height: 0.88;
+            text-align: center;
+            letter-spacing: 10px;
+            transform: scale(0.7);
+            opacity: 0;
+            position: relative;
+            z-index: 2;
+        }
+
+        .free-text .free-purple {
+            color: var(--purple);
+        }
+
+        .scene.active .free-text {
+            animation: slamIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards 0.2s;
+        }
+
+        @keyframes slamIn {
+            0% {
+                transform: scale(2.2);
+                opacity: 0;
+                filter: blur(22px);
+            }
+
+            65% {
+                transform: scale(0.96);
+                opacity: 1;
+                filter: blur(0);
+            }
+
+            82% {
+                transform: scale(1.025);
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+                filter: blur(0);
+            }
+        }
+
+        .free-subtext {
+            font-size: 42px;
+            color: var(--text-muted);
+            margin-top: 52px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            opacity: 0;
+            position: relative;
+            z-index: 2;
+        }
+
+        .scene.active .free-subtext {
+            animation: fadeIn 0.6s ease-out forwards 0.72s;
+        }
+
+        /* ========================================= */
+        /* SHARED KEYFRAMES                         */
+        /* ========================================= */
+        @keyframes slideUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* ========================================= */
+        /* AMBIENT PARTICLES (Jams + Capsule)       */
+        /* ========================================= */
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            pointer-events: none;
+            opacity: 0;
+            z-index: 1;
+        }
+
+        .particle.visible {
+            animation: particleDrift var(--dur, 4s) ease-in-out forwards;
+        }
+
+        @keyframes particleDrift {
+            0% {
+                opacity: 0;
+                transform: translate(0, 0) scale(0.4);
+            }
+
+            25% {
+                opacity: var(--peak, 0.45);
+            }
+
+            75% {
+                opacity: var(--peak, 0.45);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translate(var(--dx, 30px), var(--dy, -60px)) scale(1);
+            }
+        }
+
+        /* ========================================= */
+        /* WATERMARK                                */
+        /* ========================================= */
+        .watermark {
+            position: absolute;
+            bottom: 58px;
+            right: 58px;
+            width: 90px;
+            height: 90px;
+            opacity: 0.6;
+            z-index: 9992;
+            filter: drop-shadow(0 3px 12px rgba(0, 0, 0, 0.7));
+        }
+
+        .watermark img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        /* ========================================= */
+        /* SCENE FLASH                              */
+        /* ========================================= */
+        .scene-flash {
+            position: absolute;
+            inset: 0;
+            background: #000;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 9993;
+        }
+
+        .scene-flash.active {
+            animation: flashCut 0.32s ease-out forwards;
+        }
+
+        @keyframes flashCut {
+            0% {
+                opacity: 0;
+            }
+
+            28% {
+                opacity: 0.75;
+            }
+
+            100% {
+                opacity: 0;
+            }
+        }
+
+        /* ========================================= */
+        /* STAGE SHAKE                              */
+        /* ========================================= */
+        @keyframes stageShake {
+            0% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            25% {
+                transform: translate(-4px, 2px) scale(1.004);
+            }
+
+            50% {
+                transform: translate(3px, -2px) scale(1.002);
+            }
+
+            75% {
+                transform: translate(-2px, 1px) scale(1.001);
+            }
+
+            100% {
+                transform: translate(0, 0) scale(1);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="stage">
+        <!-- Backgrounds -->
+        <div class="bg-gradient"></div>
+        <div class="bg-gradient-teal"></div>
+
+        <!-- Watermark -->
+        <div class="watermark"><img src="yeah.ico" alt="Krew"></div>
+
+        <!-- Flash layer -->
+        <div class="scene-flash" id="sceneFlash"></div>
+
+        <!-- ===== SCENE 0: INTRO ===== -->
+        <div class="scene active" id="scene-0">
+            <div class="intro-icon-container">
+                <img src="yeah.ico" class="intro-icon" alt="Krew">
+            </div>
+        </div>
+
+        <!-- ===== SCENE 1: LOGO ===== -->
+        <div class="scene" id="scene-1">
+            <div class="logo-container" id="logoContainer">
+                <div class="krew-logo">KREW</div>
+                <div class="logo-tagline" id="logoTagline">Your music. Unlimited.</div>
+            </div>
+        </div>
+
+        <!-- ===== SCENE 2: BELT ===== -->
+        <div class="scene" id="scene-2">
+            <div class="covers-wrapper" id="belt">
+                <!-- Batch 1 -->
+                <div class="cover-card"><img src="song_images/streets.webp"></div>
+                <div class="cover-card"><img
+                        src="../krew_backend/static/covers/052 - The Weeknd, Daft Punk - Starboy.jpg"></div>
+                <div class="cover-card"><img src="../krew_backend/static/covers/Frank Ocean - Nights.jpg"></div>
+                <div class="cover-card"><img
+                        src="../krew_backend/static/covers/Tame Impala - The Less I Know The Better.jpg"></div>
+                <div class="cover-card"><img src="../krew_backend/static/covers/Lana Del Rey - West Coast.jpg"></div>
+                <div class="cover-card"><img src="../krew_backend/static/covers/Arctic Monkeys - Do I Wanna Know.jpg">
+                </div>
+                <div class="cover-card"><img src="../krew_backend/static/covers/Joji - SLOW DANCING IN THE DARK.jpg">
+                </div>
+                <div class="cover-card"><img src="../krew_backend/static/covers/Harry Styles - As It Was.jpg"></div>
+                <div class="cover-card"><img src="../krew_backend/static/covers/Dua Lipa - Levitating.jpg"></div>
+                <div class="cover-card"><img
+                        src="../krew_backend/static/covers/Kendrick Lamar, SZA - All The Stars (with SZA) - From 'Black Panther- The Album'.jpg">
+                </div>
+                <div class="cover-card"><img src="../krew_backend/static/covers/Steve Lacy - Bad Habit.jpg"></div>
+                <div class="cover-card"><img src="../krew_backend/static/covers/Glass Animals - Heat Waves.jpg"></div>
+                <div class="cover-card"><img src="../krew_backend/static/covers/Taylor Swift - Lover.jpg"></div>
+                <div class="cover-card"><img
+                        src="../krew_backend/static/covers/Juice WRLD - All Girls Are The Same.jpg"></div>
+                <div class="cover-card"><img src="../krew_backend/static/covers/Eminem - Without Me.jpg"></div>
+                <div class="cover-card"><img src="../krew_backend/static/covers/SZA - Snooze.jpg"></div>
+                <div class="cover-card"><img
+                        src="../krew_backend/static/covers/Doja Cat, SZA - Kiss Me More (feat. SZA).jpg"></div>
+                <div class="cover-card"><img src="../krew_backend/static/covers/J. Cole - No Role Modelz.jpg"></div>
+                <div class="cover-card"><img
+                        src="../krew_backend/static/covers/The Neighbourhood - Sweater Weather.jpg"></div>
+                <div class="cover-card"><img src="../krew_backend/static/covers/Shawn Mendes - Stitches.jpg"></div>
+                <div class="cover-card"><img src="../krew_backend/static/covers/Charlie Puth - Attention.jpg"></div>
+                <div class="cover-card"><img src="../krew_backend/static/covers/Adele - Skyfall.jpg"></div>
+                <div class="cover-card"><img src="../krew_backend/static/covers/Bruno Mars - That's What I Like.jpg">
+                </div>
+                <div class="cover-card"><img src="../krew_backend/static/covers/Imagine Dragons - Demons.jpg"></div>
+                <div class="cover-card"><img
+                        src="../krew_backend/static/covers/One Direction - What Makes You Beautiful.jpg"></div>
+                <div class="cover-card"><img src="../krew_backend/static/covers/Conan Gray - Heather.jpg"></div>
+                <div class="cover-card"><img
+                        src="../krew_backend/static/covers/Lana Del Rey, Cedric Gervais - Summertime Sadness (Lana Del Rey Vs. Cedric Gervais) - Cedric Gervais Remix.jpg">
+                </div>
+                <div class="cover-card"><img src="../krew_backend/static/covers/Mitski - Washing Machine Heart.jpg">
+                </div>
+                <div class="cover-card"><img src="../krew_backend/static/covers/078 - The Weeknd - Blinding Lights.jpg">
+                </div>
+                <!-- Batch 2 -->
+                <div class="cover-card"><img src="song_images/streets.webp"></div>
+                <div class="cover-card"><img
+                        src="../krew_backend/static/covers/052 - The Weeknd, Daft Punk - Starboy.jpg"></div>
+                <div class="cover-card"><img src="../krew_backend/static/covers/Frank Ocean - Nights.jpg"></div>
+                <div class="cover-card"><img
+                        src="../krew_backend/static/covers/Tame Impala - The Less I Know The Better.jpg"></div>
+                <div class="cover-card"><img src="../krew_backend/static/covers/Lana Del Rey - West Coast.jpg"></div>
+                <div class="cover-card"><img src="../krew_backend/static/covers/Arctic Monkeys - Do I Wanna Know.jpg">
+                </div>
+                <div class="cover-card"><img src="../krew_backend/static/covers/Joji - SLOW DANCING IN THE DARK.jpg">
+                </div>
+                <div class="cover-card"><img src="../krew_backend/static/covers/Harry Styles - As It Was.jpg"></div>
+                <div class="cover-card"><img src="../krew_backend/static/covers/Dua Lipa - Levitating.jpg"></div>
+                <div class="cover-card"><img
+                        src="../krew_backend/static/covers/Kendrick Lamar, SZA - All The Stars (with SZA) - From 'Black Panther- The Album'.jpg">
+                </div>
+                <div class="cover-card"><img src="../krew_backend/static/covers/Steve Lacy - Bad Habit.jpg"></div>
+                <div class="cover-card"><img src="../krew_backend/static/covers/Glass Animals - Heat Waves.jpg"></div>
+                <div class="cover-card"><img src="../krew_backend/static/covers/Taylor Swift - Lover.jpg"></div>
+                <div class="cover-card"><img
+                        src="../krew_backend/static/covers/Juice WRLD - All Girls Are The Same.jpg"></div>
+                <div class="cover-card"><img src="../krew_backend/static/covers/Eminem - Without Me.jpg"></div>
+                <!-- Batch 3 -->
+                <div class="cover-card"><img src="song_images/streets.webp"></div>
+                <div class="cover-card"><img
+                        src="../krew_backend/static/covers/052 - The Weeknd, Daft Punk - Starboy.jpg"></div>
+                <div class="cover-card"><img src="../krew_backend/static/covers/Frank Ocean - Nights.jpg"></div>
+                <div class="cover-card"><img
+                        src="../krew_backend/static/covers/Tame Impala - The Less I Know The Better.jpg"></div>
+                <div class="cover-card"><img src="../krew_backend/static/covers/Lana Del Rey - West Coast.jpg"></div>
+                <div class="cover-card"><img src="../krew_backend/static/covers/Arctic Monkeys - Do I Wanna Know.jpg">
+                </div>
+                <div class="cover-card"><img src="../krew_backend/static/covers/Joji - SLOW DANCING IN THE DARK.jpg">
+                </div>
+                <div class="cover-card"><img src="../krew_backend/static/covers/Harry Styles - As It Was.jpg"></div>
+                <div class="cover-card"><img src="../krew_backend/static/covers/Dua Lipa - Levitating.jpg"></div>
+                <div class="cover-card"><img
+                        src="../krew_backend/static/covers/Kendrick Lamar, SZA - All The Stars (with SZA) - From 'Black Panther- The Album'.jpg">
+                </div>
+                <div class="cover-card"><img src="../krew_backend/static/covers/Steve Lacy - Bad Habit.jpg"></div>
+                <div class="cover-card"><img src="../krew_backend/static/covers/Glass Animals - Heat Waves.jpg"></div>
+                <div class="cover-card"><img src="../krew_backend/static/covers/Taylor Swift - Lover.jpg"></div>
+                <div class="cover-card"><img
+                        src="../krew_backend/static/covers/Juice WRLD - All Girls Are The Same.jpg"></div>
+                <div class="cover-card"><img src="../krew_backend/static/covers/Eminem - Without Me.jpg"></div>
+            </div>
+            <div class="belt-text"><span class="counter" id="songCounter">9,847</span>+ songs<br><span
+                    class="highlight">and growing</span></div>
+        </div>
+
+        <!-- ===== SCENE 3: SEARCH ===== -->
+        <div class="scene" id="scene-3">
+            <div class="search-container">
+                <div class="search-bar" id="typing-box"></div>
+                <div class="search-result" id="res-box">
+                    <img src="song_images/505.webp" class="res-img">
+                    <div>
+                        <div class="res-title">505</div>
+                        <div class="res-artist">Arctic Monkeys</div>
+                    </div>
+                </div>
+                <div class="sub-hint">Search by lyrics</div>
+            </div>
+        </div>
+
+        <!-- ===== SCENE 4: JAMS ===== -->
+        <div class="scene" id="scene-4">
+            <!-- ambient particles injected by JS -->
+            <div class="jams-container">
+                <div class="jams-title">JAMS</div>
+                <div class="jams-subtitle">Listen together. In sync.</div>
+            </div>
+        </div>
+
+        <!-- ===== SCENE 5: CAPSULE ===== -->
+        <div class="scene" id="scene-5">
+            <!-- ambient particles injected by JS -->
+            <div class="capsule-container">
+                <div class="capsule-title">YOUR<br><span class="capsule-highlight">SOUND CAPSULE</span></div>
+                <div class="capsule-subtitle">A time capsule of your music journey</div>
+            </div>
+        </div>
+
+        <!-- ===== SCENE 6: FREE ===== -->
+        <div class="scene" id="scene-6">
+            <div class="free-scene-bg">
+                <div class="free-impact-flash"></div>
+            </div>
+            <div class="free-text">ALL<br><span class="free-purple">FREE.</span></div>
+            <div class="free-subtext">No ads. No limits.</div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================================
+        // CONFIG
+        // ============================================================
+        const scenes = document.querySelectorAll('.scene');
+        const sceneFlash = document.getElementById('sceneFlash');
+        const stage = document.getElementById('stage');
+
+        // Duration each scene stays on screen (ms)
+        const sceneTimes = [1500, 2200, 2500, 2600, 2100, 2100, 2200];
+        const TOTAL = sceneTimes.reduce((a, b) => a + b, 0);
+
+        // ============================================================
+        // VIEWPORT SCALING — fit 9:16 stage to window
+        // ============================================================
+        const STAGE_W = 1080, STAGE_H = 1920;
+        function scaleStage() {
+            const vw = window.innerWidth;
+            const vh = window.innerHeight;
+            const scale = Math.min(vw / STAGE_W, vh / STAGE_H, 1);
+            stage.style.transform = `scale(${scale})`;
+        }
+        scaleStage();
+        window.addEventListener('resize', scaleStage);
+
+        // ============================================================
+        // STATE — all timers tracked so we can nuke them on loop reset
+        // ============================================================
+        let currentScene = 0;
+        let timers = [];   // setTimeout ids
+        let beltRAF = null; // requestAnimationFrame id for belt
+
+        function scheduleTimeout(fn, ms) {
+            const id = setTimeout(fn, ms);
+            timers.push(id);
+            return id;
+        }
+
+        function clearAll() {
+            timers.forEach(clearTimeout);
+            timers = [];
+            if (beltRAF) { cancelAnimationFrame(beltRAF); beltRAF = null; }
+        }
+
+        // ============================================================
+        // PARTICLE SYSTEM (for Jams + Capsule)
+        // ============================================================
+        const particleConfigs = [
+            // Jams — warm orange / coral dots
+            { sceneId: 'scene-4', count: 7, colors: ['rgba(255,107,107,0.6)', 'rgba(254,202,87,0.5)', 'rgba(255,150,80,0.5)'] },
+            // Capsule — cool violet / blue dots
+            { sceneId: 'scene-5', count: 6, colors: ['rgba(162,155,254,0.55)', 'rgba(108,92,231,0.5)', 'rgba(100,180,255,0.45)'] }
+        ];
+
+        function seedParticles() {
+            particleConfigs.forEach(({ sceneId, count, colors }) => {
+                const container = document.getElementById(sceneId);
+                for (let i = 0; i < count; i++) {
+                    const p = document.createElement('div');
+                    p.className = 'particle';
+                    const size = 18 + Math.random() * 38;
+                    p.style.width = size + 'px';
+                    p.style.height = size + 'px';
+                    p.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    p.style.left = (8 + Math.random() * 84) + '%';
+                    p.style.top = (12 + Math.random() * 76) + '%';
+                    p.style.setProperty('--dur', (3.2 + Math.random() * 2.8) + 's');
+                    p.style.setProperty('--dx', (Math.random() * 100 - 50) + 'px');
+                    p.style.setProperty('--dy', -(40 + Math.random() * 80) + 'px');
+                    p.style.setProperty('--peak', (0.3 + Math.random() * 0.25).toFixed(2));
+                    p.dataset.delay = (Math.random() * 0.6).toFixed(2); // stagger
+                    container.appendChild(p);
+                }
+            });
+        }
+        seedParticles();
+
+        function activateParticles(sceneEl) {
+            sceneEl.querySelectorAll('.particle').forEach(p => {
+                p.classList.remove('visible');
+                // force reflow then re-add with staggered delay
+                void p.offsetWidth;
+                const delay = parseFloat(p.dataset.delay) * 1000;
+                scheduleTimeout(() => p.classList.add('visible'), delay);
+            });
+        }
+        function deactivateParticles(sceneEl) {
+            sceneEl.querySelectorAll('.particle').forEach(p => p.classList.remove('visible'));
+        }
+
+        // ============================================================
+        // RESET helpers — make every scene re-animatable
+        // ============================================================
+        function resetAll() {
+            // typing
+            document.getElementById('typing-box').innerHTML = '';
+            document.getElementById('res-box').classList.remove('show');
+
+            // counter
+            document.getElementById('songCounter').textContent = '9,847';
+
+            // belt
+            document.getElementById('belt').style.transform = 'translateX(100px)';
+            document.querySelectorAll('.cover-card').forEach(c => c.classList.remove('fast'));
+
+            // logo shake + tagline
+            const logo = document.getElementById('logoContainer');
+            logo.classList.remove('shake');
+            const tag = document.getElementById('logoTagline');
+            tag.classList.remove('visible');
+
+            // FREE impact flash — remove & re-add element so CSS anim re-fires
+            const freeScene = document.getElementById('scene-6');
+            const oldFlash = freeScene.querySelector('.free-impact-flash');
+            const newFlash = oldFlash.cloneNode(true);
+            oldFlash.parentNode.replaceChild(newFlash, oldFlash);
+
+            // particles
+            document.querySelectorAll('.particle').forEach(p => p.classList.remove('visible'));
+        }
+
+        // ============================================================
+        // MAIN LOOP
+        // ============================================================
+        function startLoop() {
+            clearAll();
+            resetAll();
+
+            // activate scene 0
+            scenes.forEach(s => s.classList.remove('active'));
+            currentScene = 0;
+            scenes[0].classList.add('active');
+
+            // schedule transitions: scene i starts after sum of durations 0..i-1
+            let elapsed = sceneTimes[0];
+            for (let i = 1; i < scenes.length; i++) {
+                const idx = i;
+                scheduleTimeout(() => goTo(idx), elapsed);
+                elapsed += sceneTimes[i];
+            }
+
+            // loop
+            scheduleTimeout(startLoop, TOTAL);
+        }
+
+        function goTo(idx) {
+            // flash cut
+            sceneFlash.classList.remove('active');
+            void sceneFlash.offsetWidth;
+            sceneFlash.classList.add('active');
+
+            // swap
+            scenes[currentScene].classList.remove('active');
+            deactivateParticles(scenes[currentScene]);
+            currentScene = idx;
+            scenes[currentScene].classList.add('active');
+
+            // per-scene triggers
+            switch (idx) {
+                case 1: triggerLogo(); break;
+                case 2: triggerBelt(); break;
+                case 3: triggerTyping(); break;
+                case 4: activateParticles(scenes[4]); break;
+                case 5: activateParticles(scenes[5]); break;
+                case 6: triggerFreeShake(); break;
+            }
+        }
+
+        // ============================================================
+        // SCENE: LOGO (1)
+        // ============================================================
+        function triggerLogo() {
+            // tagline slide up after zoom settles
+            scheduleTimeout(() => {
+                document.getElementById('logoTagline').classList.add('visible');
+            }, 750);
+
+            // shake on land
+            scheduleTimeout(() => {
+                const c = document.getElementById('logoContainer');
+                c.classList.add('shake');
+                scheduleTimeout(() => c.classList.remove('shake'), 460);
+            }, 1350);
+        }
+
+        // ============================================================
+        // SCENE: BELT (2)
+        // ============================================================
+        function triggerBelt() {
+            const belt = document.getElementById('belt');
+            const cards = document.querySelectorAll('.cover-card');
+            let pos = 100;
+            let speed = 4;
+            const start = performance.now();
+            const duration = 2350; // ms belt runs
+
+            cards.forEach(c => c.classList.remove('fast'));
+            belt.style.transform = 'translateX(100px)';
+
+            function tick(now) {
+                const t = now - start;
+                if (t > duration) {
+                    cards.forEach(c => c.classList.remove('fast'));
+                    return;
+                }
+                pos -= speed;
+                speed *= 1.022;
+                belt.style.transform = `translateX(${pos}px)`;
+                if (speed > 22) cards.forEach(c => c.classList.add('fast'));
+                beltRAF = requestAnimationFrame(tick);
+            }
+            beltRAF = requestAnimationFrame(tick);
+
+            // counter
+            animateCounter();
+        }
+
+        // ============================================================
+        // SCENE: TYPING (3)
+        // ============================================================
+        function triggerTyping() {
+            const phrase = "i'm going back to 505...";
+            const box = document.getElementById('typing-box');
+            const res = document.getElementById('res-box');
+            box.innerHTML = '<span class="cursor"></span>';
+            res.classList.remove('show');
+
+            let i = 0;
+            function type() {
+                if (i >= phrase.length) {
+                    // show result after short pause
+                    scheduleTimeout(() => res.classList.add('show'), 280);
+                    return;
+                }
+                // insert char before cursor
+                const cursor = box.querySelector('.cursor');
+                const node = document.createTextNode(phrase[i]);
+                box.insertBefore(node, cursor);
+                i++;
+                scheduleTimeout(type, 52);
+            }
+            type();
+        }
+
+        // ============================================================
+        // SCENE: FREE shake (6)
+        // ============================================================
+        function triggerFreeShake() {
+            // small stage shake when FREE slams in
+            scheduleTimeout(() => {
+                stage.style.animation = 'none';
+                void stage.offsetWidth;
+                stage.style.animation = 'stageShake 0.18s ease-out';
+            }, 320);
+        }
+
+        // ============================================================
+        // COUNTER  9,847 → 10,547
+        // ============================================================
+        function animateCounter() {
+            const el = document.getElementById('songCounter');
+            const start = 9847, end = 10547, dur = 2000;
+            const t0 = performance.now();
+
+            (function tick(now) {
+                const p = Math.min((now - t0) / dur, 1);
+                const e = 1 - Math.pow(1 - p, 3); // ease-out cubic
+                el.textContent = Math.floor(start + (end - start) * e).toLocaleString();
+                if (p < 1) scheduleTimeout(() => requestAnimationFrame(tick), 0);
+            })(t0);
+        }
+
+        // ============================================================
+        // GO
+        // ============================================================
+        startLoop();
+    </script>
+</body>
+
+</html>                                                                                                                                                                                                                                                                                                                             

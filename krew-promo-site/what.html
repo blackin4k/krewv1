@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Krew Explained</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: Inter, sans-serif;
+            padding: 40px;
+        }
+
+        .slide {
+            width: 1080px;
+            height: 1080px;
+            padding: 90px;
+            color: white;
+            position: relative;
+            background: linear-gradient(135deg, #000 0%, #0a0a0a 100%);
+        }
+
+        .glow {
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            filter: blur(150px);
+            opacity: 0.15;
+            pointer-events: none;
+        }
+
+        .feature-item {
+            transition: all 0.3s ease;
+            padding: 20px;
+            border-radius: 20px;
+        }
+
+        .feature-item:hover {
+            background: rgba(139, 92, 246, 0.1);
+            transform: translateX(10px);
+        }
+
+        .cta-button {
+            transition: all 0.3s ease;
+        }
+
+        .cta-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 20px 60px rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="slide flex flex-col justify-between">
+
+        <!-- Ambient glow effects -->
+        <div class="glow bg-purple-600 top-0 right-0"></div>
+        <div class="glow bg-blue-600 bottom-0 left-0"></div>
+
+        <!-- Header -->
+        <div class="relative z-10">
+            <div
+                class="text-8xl font-black mb-6 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                KREW
+            </div>
+            <p class="text-5xl text-gray-400 font-bold">Music streaming.<br />Reimagined.</p>
+        </div>
+
+        <!-- Features Grid -->
+        <div class="relative z-10 grid grid-cols-2 gap-6 text-4xl font-bold">
+
+            <div class="feature-item flex items-center gap-6">
+                <span class="text-5xl">🚫</span>
+                <span class="text-gray-200">No ads. Ever.</span>
+            </div>
+
+            <div class="feature-item flex items-center gap-6">
+                <span class="text-5xl">🎧</span>
+                <span class="text-gray-200">Studio quality</span>
+            </div>
+
+            <div class="feature-item flex items-center gap-6">
+                <span class="text-5xl">🔥</span>
+                <span class="text-gray-200">Live Jam sessions</span>
+            </div>
+
+            <div class="feature-item flex items-center gap-6">
+                <span class="text-5xl">📊</span>
+                <span class="text-gray-200">Your music stats</span>
+            </div>
+
+            <div class="feature-item flex items-center gap-6 col-span-2">
+                <span class="text-5xl">🎤</span>
+                <span class="text-gray-200">Artists can upload & get verified</span>
+            </div>
+
+        </div>
+
+        <!-- Footer CTA -->
+        <div class="relative z-10 flex justify-between items-center">
+
+            <div class="text-purple-400 text-4xl font-mono tracking-wider">krew.app</div>
+
+            <div class="cta-button bg-white text-black text-5xl font-black py-8 px-24 rounded-full cursor-pointer">
+                Start Free
+            </div>
+
+        </div>
+
+    </div>
+
+</body>
+
+</html>

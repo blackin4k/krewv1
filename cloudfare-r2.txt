@@ -1,0 +1,21 @@
+public development url: https://pub-5e22fa30a7744b769bea5ad23240ed75.r2.dev
+
+Name:
+krew-music
+
+Created:
+Jan 23, 2026
+Location:
+Asia-Pacific (APAC)
+
+S3 API:
+https://ced7d2775d362f5eee444f2ec74bd7fd.r2.cloudflarestorage.com/krew-music
+
+
+token value : HbeXyq5iQKBrwjjDYizkjLVVARBGNNGYbQlARrk7
+access key id : 0022f6249cf59fb8f55da24eea22cbd2
+Secret Access Key : a8b8964edaa3693bd66bc35fd2296510c55260c17acab030b6ffdbe49b375c28
+
+Use jurisdiction-specific endpoints for S3 clients:
+DefaultEuropean Union (EU)
+https://ced7d2775d362f5eee444f2ec74bd7fd.r2.cloudflarestorage.com

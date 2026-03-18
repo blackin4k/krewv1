@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Krew - Most Played Stats</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #0a0a0a;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .post-container {
+            width: 1080px;
+            height: 1080px;
+            background: linear-gradient(135deg, #111111 0%, #050505 100%);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            padding: 60px;
+            /* Compact padding */
+            color: white;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Decorative Background Elements */
+        .glow {
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(29, 185, 84, 0.15) 0%, rgba(0, 0, 0, 0) 70%);
+            top: -200px;
+            right: -200px;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .glow-2 {
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(100, 100, 255, 0.1) 0%, rgba(0, 0, 0, 0) 70%);
+            bottom: -100px;
+            left: -100px;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        header {
+            margin-bottom: 30px;
+            /* Compact margin */
+            z-index: 10;
+        }
+
+        h1 {
+            font-size: 64px;
+            /* Compact font size */
+            font-weight: 800;
+            letter-spacing: -2px;
+            line-height: 1;
+            background: linear-gradient(90deg, #fff, #888);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 12px;
+        }
+
+        p.subtitle {
+            font-size: 28px;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .songs-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            /* Compact gap */
+            z-index: 10;
+            flex-grow: 1;
+        }
+
+        .song-item {
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 16px;
+            /* Compact padding */
+            backdrop-filter: blur(10px);
+            transition: transform 0.2s;
+            animation: fadeUp 0.6s ease forwards;
+            opacity: 0;
+            /* Important for animation */
+        }
+
+        /* Staggered animation delays */
+        .song-item:nth-child(1) {
+            animation-delay: 0.1s;
+        }
+
+        .song-item:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .song-item:nth-child(3) {
+            animation-delay: 0.3s;
+        }
+
+        .song-item:nth-child(4) {
+            animation-delay: 0.4s;
+        }
+
+        .song-item:nth-child(5) {
+            animation-delay: 0.5s;
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .song-item:hover {
+            transform: translateY(-6px) scale(1.01);
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .rank {
+            font-size: 40px;
+            font-weight: 700;
+            color: #333;
+            width: 60px;
+            text-align: center;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .song-cover {
+            width: 88px;
+            /* Compact size */
+            height: 88px;
+            border-radius: 12px;
+            object-fit: cover;
+            margin: 0 24px;
+            background-color: #222;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .song-info {
+            flex-grow: 1;
+        }
+
+        .song-title {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            color: #fff;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 500px;
+        }
+
+        .song-artist {
+            font-size: 20px;
+            color: #888;
+            font-weight: 500;
+        }
+
+        .play-count-container {
+            text-align: right;
+            padding-right: 12px;
+            min-width: 140px;
+            /* Ensure space for bar */
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+
+        .play-count-val {
+            font-size: 28px;
+            font-weight: 700;
+            color: #fff;
+            display: block;
+        }
+
+        .play-label {
+            font-size: 14px;
+            color: #555;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+            display: none;
+            /* Hide label to keep it clean with bar, optional */
+        }
+
+        .bar {
+            width: 120px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+
+        .fill {
+            height: 100%;
+            background: #1db954;
+            /* Spotify Green / Krew Accent */
+            border-radius: 10px;
+            transition: width 1s ease-out;
+        }
+
+        .brand-footer {
+            margin-top: auto;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 16px;
+            opacity: 0.8;
+            padding-top: 20px;
+        }
+
+        .brand-logo {
+            height: 40px;
+            width: auto;
+        }
+
+        .brand-text {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: -1px;
+        }
+
+        /* Top 1 Highlight */
+        .song-item:nth-child(1) {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            /* transform: scale(1.02); removed to avoid conflict with hover/animation, handled in margin/shadow */
+            margin-left: -10px;
+            margin-right: -10px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .song-item:nth-child(1):hover {
+            transform: translateY(-6px) scale(1.02);
+            /* Restore scale on hover */
+        }
+
+        .song-item:nth-child(1) .rank {
+            color: #fff;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="post-container">
+        <div class="glow"></div>
+        <div class="glow-2"></div>
+
+        <header>
+            <h1>Most Played on Krew</h1>
+            <p class="subtitle">Platform-wide Top Charts</p>
+        </header>
+
+        <div class="songs-list">
+            <!-- 1. Exit Music (For a Flim) - Radiohead (1879 plays) -->
+            <div class="song-item">
+                <div class="rank">1</div>
+                <img src="song_images/exit music(for a flim).png" alt="Cover" class="song-cover">
+                <div class="song-info">
+                    <div class="song-title">Exit Music (For a Film)</div>
+                    <div class="song-artist">Radiohead</div>
+                </div>
+                <div class="play-count-container">
+                    <span class="play-count-val">1,879</span>
+                    <div class="bar">
+                        <div class="fill" style="width: 100%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. High On You - Jind Universe (808 plays) -->
+            <div class="song-item">
+                <div class="rank">2</div>
+                <img src="song_images/high on u.webp" alt="Cover" class="song-cover">
+                <div class="song-info">
+                    <div class="song-title">High On You</div>
+                    <div class="song-artist">Jind Universe</div>
+                </div>
+                <div class="play-count-container">
+                    <span class="play-count-val">808</span>
+                    <div class="bar">
+                        <div class="fill" style="width: 43%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. 505 - Arctic Monkeys (703 plays) -->
+            <div class="song-item">
+                <div class="rank">3</div>
+                <img src="song_images/505.webp" alt="Cover" class="song-cover">
+                <div class="song-info">
+                    <div class="song-title">505</div>
+                    <div class="song-artist">Arctic Monkeys</div>
+                </div>
+                <div class="play-count-container">
+                    <span class="play-count-val">703</span>
+                    <div class="bar">
+                        <div class="fill" style="width: 37%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. Chaandni - Surf (320 plays) -->
+            <div class="song-item">
+                <div class="rank">4</div>
+                <img src="song_images/chaandini.webp" alt="Cover" class="song-cover">
+                <div class="song-info">
+                    <div class="song-title">Chaandni</div>
+                    <div class="song-artist">Surf</div>
+                </div>
+                <div class="play-count-container">
+                    <span class="play-count-val">320</span>
+                    <div class="bar">
+                        <div class="fill" style="width: 17%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. Streets - Doja Cat (311 plays) -->
+            <div class="song-item">
+                <div class="rank">5</div>
+                <img src="song_images/streets.webp" alt="Cover" class="song-cover">
+                <div class="song-info">
+                    <div class="song-title">Streets</div>
+                    <div class="song-artist">Doja Cat</div>
+                </div>
+                <div class="play-count-container">
+                    <span class="play-count-val">311</span>
+                    <div class="bar">
+                        <div class="fill" style="width: 16%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="brand-footer">
+            <span class="brand-text">krew</span>
+            <img src="yeah.svg" alt="Krew Logo" class="brand-logo">
+        </div>
+    </div>
+
+</body>
+
+</html>
