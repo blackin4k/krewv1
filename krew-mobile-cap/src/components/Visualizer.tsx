@@ -9,8 +9,12 @@ interface VisualizerProps {
 }
 
 export default function Visualizer({
-    className = "absolute bottom-0 left-0 w-full h-[400px] pointer-events-none z-0 opacity-60",
-    colors = ['rgba(59, 130, 246, 0.1)', 'rgba(96, 165, 250, 0.15)', 'rgba(147, 197, 253, 0.05)'],
+    className = "absolute bottom-0 left-0 w-full h-[400px] pointer-events-none z-0 opacity-90",
+    colors = [
+        'rgba(255,255,255,0.25)',
+        'rgba(255,255,255,0.5)',
+        'rgba(255,255,255,0.8)'
+    ],
     height,
     mode = 'wave'
 }: VisualizerProps) {
@@ -113,15 +117,14 @@ export default function Visualizer({
 
                         for (let i = 0; i <= width + 10; i += 20) {
                             const freqIdx = Math.floor((i / width) * (bufferLength / 2));
-                            const smoothData = Math.floor(
-                                ((dataArray[freqIdx - 1] || 0) +
-                                    (dataArray[freqIdx] || 0) * 2 +
-                                    (dataArray[freqIdx + 1] || 0)) / 4
-                            );
+                            const smoothData =
+                                (dataArray[freqIdx] * 0.6 +
+                                    (dataArray[freqIdx - 1] || 0) * 0.2 +
+                                    (dataArray[freqIdx + 1] || 0) * 0.2);
 
                             const waveY = height * (1 - offset)
                                 - Math.sin(i * 0.005 + Date.now() * speed) * amplitude
-                                - (smoothData * 0.6 * scale * 2.0);
+                                - (smoothData * 0.6 * scale * 1.5);
 
                             points.push({ x: i, y: waveY });
                         }
@@ -135,8 +138,8 @@ export default function Visualizer({
                             ctx.quadraticCurveTo(p0.x, p0.y, midX, midY);
                         }
 
-                        ctx.lineTo(width, height);
-                        ctx.lineTo(0, height);
+                        ctx.lineTo(width, height + 200);
+                        ctx.lineTo(0, height + 200);
                         ctx.closePath();
 
                         const gradient = ctx.createLinearGradient(0, height * (1 - offset - 0.5), 0, height);
@@ -160,11 +163,18 @@ export default function Visualizer({
                         ctx.fill();
                     };
 
-                    drawWave(colors[0], 0.25, 0.0008, 40 + scale * 30);
-                    drawWave(colors[1], 0.18, 0.0015, 30 + scale * 40);
-                    drawWave(colors[2], 0.12, 0.0025, 15 + scale * 60);
+                    drawWave(colors[0], 0.25, 0.0008, 30 + scale * 30);
+                    drawWave(colors[1], 0.18, 0.0015, 25 + scale * 25);
+                    drawWave(colors[2], 0.12, 0.0025, 15 + scale * 30);
                 }
 
+                // Fade bottom to remove hard edge
+                const fade = ctx.createLinearGradient(0, height * 0.5, 0, height);
+                fade.addColorStop(0, 'rgba(0,0,0,0)');
+                fade.addColorStop(1, 'rgba(0,0,0,1)');
+
+                ctx.fillStyle = fade;
+                ctx.fillRect(0, 0, width, height);
                 animationRef.current = requestAnimationFrame(renderFrame);
             } catch (e) {
                 // Prevent crash if canvas drawing fails due to NaN/Infinity
@@ -184,7 +194,10 @@ export default function Visualizer({
         <canvas
             ref={canvasRef}
             className={className}
-            style={height ? { height } : undefined}
+            style={{
+                ...(height ? { height } : {}),
+                filter: `drop-shadow(0 0 20px ${colors[2] ? colors[2].replace(/[\d.]+\)$/, '0.3)') : 'rgba(255,255,255,0.3)'})`
+            }}
         />
     );
 }

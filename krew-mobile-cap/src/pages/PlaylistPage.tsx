@@ -153,8 +153,8 @@ export default function PlaylistPage() {
 
   /* ================= FETCH ================= */
 
-  const fetchPlaylist = async () => {
-    setLoading(true)
+  const fetchPlaylist = async (isRefetch = false) => {
+    if (!isRefetch) setLoading(true)
     try {
       const res = await playlistsApi.get(Number(id))
       setPlaylist(res.data)
@@ -162,7 +162,7 @@ export default function PlaylistPage() {
     } catch (error) {
       console.error('Failed to fetch playlist:', error)
     } finally {
-      setLoading(false)
+      if (!isRefetch) setLoading(false)
     }
   }
 
@@ -197,7 +197,7 @@ export default function PlaylistPage() {
   const removeSong = async (songId: number) => {
     try {
       await playlistsApi.removeSong(Number(id), songId)
-      fetchPlaylist()
+      fetchPlaylist(true)
     } catch (error) {
       console.error('Failed to remove song:', error)
     }
@@ -240,7 +240,7 @@ export default function PlaylistPage() {
 
       console.log("Success!")
       setEditDialogOpen(false)
-      fetchPlaylist()
+      fetchPlaylist(true)
     } catch (error) {
       console.error('Failed to update playlist:', error)
     }
@@ -305,7 +305,7 @@ export default function PlaylistPage() {
               {playlist && (
                 <AddSongsToPlaylistDialog
                   playlistId={playlist.id}
-                  onSongAdded={fetchPlaylist}
+                  onSongAdded={() => fetchPlaylist(true)}
                 />
               )}
 

@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Krew Brand Preview</title>
+    <link rel="icon" href="favicon_placeholder.png" type="image/x-icon">
+    <style>
+        /* CSS variables for consistent styling and theme toggling */
+        :root {
+            /* Dark Mode colors */
+            --bg-color: #0B0B0F; /* Black background */
+            --text-color: #E0E0E0; /* Light text for readability */
+            --accent-color: #8A2BE2; /* Neon Purple accent */
+            --icon-bg: #15151A; /* Slightly lighter for contrast */
+            --section-border: #333; /* Subtler borders */
+            --toggle-bg: #555;
+            --toggle-after: white;
+            --insta-bio-color: #E0E0E0;
+        }
+
+        /* Light Mode colors applied via class */
+        .light-mode {
+            --bg-color: #F8F9FA; /* Off-white background */
+            --text-color: #212529; /* Dark text */
+            /* Using a slightly darker purple for contrast on light mode */
+            --accent-color: #7D26CF;
+            --icon-bg: #EAEAEA; /* Slightly darker light for contrast */
+            --section-border: #CCC; /* Brighter borders */
+            --toggle-bg: #E0E0E0;
+            --toggle-after: #555;
+            --insta-bio-color: #555;
+        }
+
+        /* Global styles */
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            transition: background-color 0.3s, color 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1, h2, h3 { margin-top: 0; color: var(--text-color); transition: color 0.3s; }
+        h1 { font-size: 3em; border-bottom: 2px solid var(--accent-color); padding-bottom: 10px; margin-bottom: 40px;}
+        h2 { font-size: 2em; margin-bottom: 25px; color: var(--text-color); }
+        h3 { font-size: 1.2em; color: var(--accent-color); transition: color 0.3s;}
+        p { line-height: 1.6; }
+
+        /* Common section styling for clear delineation */
+        section {
+            width: 100%;
+            max-width: 1000px;
+            background-color: transparent; /* sections sit directly on the body color */
+            padding: 50px 0;
+            margin-bottom: 0px; /* remove margin, use padding for separation */
+            border-bottom: 1px solid var(--section-border);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: border-color 0.3s;
+        }
+        section:last-of-type { border-bottom: none; } /* No border after last section */
+
+        /* Theme Toggle styles */
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 1000;
+            background: rgba(11, 11, 15, 0.7); /* translucent bg */
+            padding: 8px 15px;
+            border-radius: 20px;
+            backdrop-filter: blur(3px); /* subtle blur behind toggle */
+            transition: background-color 0.3s;
+        }
+        .light-mode .theme-toggle { background: rgba(248, 249, 250, 0.7); }
+
+        .theme-toggle input { display: none; }
+        .theme-toggle label {
+            cursor: pointer;
+            width: 46px;
+            height: 24px;
+            background-color: var(--toggle-bg);
+            display: block;
+            border-radius: 100px;
+            position: relative;
+            transition: background-color 0.3s;
+        }
+        .theme-toggle label::after {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 18px;
+            height: 18px;
+            background-color: var(--toggle-after);
+            border-radius: 90px;
+            transition: 0.3s;
+        }
+        .theme-toggle input:checked + label { background-color: var(--accent-color); }
+        .theme-toggle input:checked + label::after {
+            left: calc(100% - 3px);
+            transform: translateX(-100%);
+        }
+        #themeLabel { font-size: 0.9em; font-weight: bold;}
+
+        /* --- 1. Landing Page Section --- */
+        #landing h1 { text-align: center; border-bottom: none; margin-bottom: 20px;}
+        #landing h1 span { color: var(--accent-color); transition: color 0.3s;}
+        #landing p { font-size: 1.2em; text-align: center; max-width: 700px; margin-top: 0px; color: var(--text-color); transition: color 0.3s;}
+        .hero-logo-placeholder { font-size: 6em; color: var(--accent-color); font-weight: bold; margin-bottom: 10px; transition: color 0.3s;}
+
+        /* --- 2. App Icon Section --- */
+        #icons .icon-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 25px;
+            width: 100%;
+            justify-content: center;
+            padding: 10px 0;
+        }
+        #icons .app-icon {
+            width: 120px;
+            height: 120px;
+            background-color: var(--icon-bg);
+            border-radius: 22px; /* iOS-style curvature approx */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 4em;
+            color: var(--accent-color);
+            font-weight: bold;
+            transition: background-color 0.3s, color 0.3s;
+            border: 2px solid rgba(138, 43, 226, 0.3); /* subtle purple border */
+        }
+
+        /* --- 3. Instagram Profile Section --- */
+        #instagram { display: flex; flex-direction: row; align-items: flex-start; gap: 40px; padding: 40px 20px; max-width: 800px;}
+        #instagram .insta-left { display: flex; flex-direction: column; align-items: center; }
+        #instagram .profile-pic {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: 3px solid var(--accent-color);
+            overflow: hidden;
+            margin-bottom: 10px;
+            display: flex; justify-content: center; align-items: center; background-color: var(--icon-bg);
+            transition: border-color 0.3s, background-color 0.3s;
+        }
+        #instagram .profile-pic span { font-size: 5em; color: var(--accent-color); font-weight: bold; transition: color 0.3s;}
+
+        #instagram .insta-right { flex: 1; color: var(--text-color); transition: color 0.3s; display: flex; flex-direction: column;}
+        #instagram .username { font-weight: bold; font-size: 1.6em; margin-bottom: 8px; color: var(--text-color); transition: color 0.3s;}
+        #instagram .stats { display: flex; gap: 18px; margin-bottom: 18px; font-size: 0.95em;}
+        #instagram .stats span { font-weight: bold; }
+        #instagram .bio { font-size: 0.9em; line-height: 1.5; color: var(--insta-bio-color); transition: color 0.3s; margin: 0; }
+        #instagram .bio a { color: var(--accent-color); text-decoration: none; transition: color 0.3s;}
+
+        /* --- 4. Favicon Section --- */
+        #favicon { flex-direction: row; justify-content: space-around; gap: 30px; padding: 40px 20px;}
+        #favicon .fav-preview { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+        /* No real images needed, we represent with styled divs and text */
+        #favicon .fav-icon {
+            background-color: var(--icon-bg);
+            display: flex; justify-content: center; align-items: center; color: var(--accent-color); font-weight: bold;
+            transition: background-color 0.3s, color 0.3s;
+            border: 1px solid rgba(138, 43, 226, 0.4);
+        }
+        #favicon .fav-icon-16 { width: 16px; height: 16px; font-size: 0.8em; border-radius: 3px; }
+        #favicon .fav-icon-32 { width: 32px; height: 32px; font-size: 1.6em; border-radius: 5px; }
+
+        /* --- Responsive design for mobile screens --- */
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            h1 { font-size: 2.2em; margin-bottom: 20px;}
+            section { padding: 30px 0; }
+            h2 { font-size: 1.6em; margin-bottom: 15px; }
+            h3 { font-size: 1.1em; }
+            
+            #landing h1 { font-size: 2.5em; }
+            #landing p { font-size: 1em; }
+            .hero-logo-placeholder { font-size: 4em; }
+
+            #icons .icon-grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 15px; }
+            #icons .app-icon { width: 90px; height: 90px; font-size: 3em; border-radius: 16px; }
+
+            #instagram { flex-direction: column; align-items: center; gap: 20px; text-align: center; padding: 30px 10px;}
+            #instagram .profile-pic { width: 100px; height: 100px; margin-bottom: 10px; }
+            #instagram .profile-pic span { font-size: 3.5em; }
+            #instagram .insta-right { align-items: center; text-align: center;}
+            #instagram .username { font-size: 1.4em; }
+            #instagram .stats { justify-content: center; flex-wrap: wrap; gap: 10px; font-size: 0.9em;}
+            #instagram .bio { font-size: 0.85em; }
+
+            #favicon { flex-direction: column; gap: 20px; text-align: center; padding: 30px 10px; }
+            #favicon .fav-preview { gap: 8px; }
+            #favicon .fav-icon-16 { width: 14px; height: 14px; font-size: 0.7em; }
+            #favicon .fav-icon-32 { width: 28px; height: 28px; font-size: 1.4em; }
+        }
+
+        /* --- Accessibility / reduced motion --- */
+        @media (prefers-reduced-motion: reduce) {
+            body, section, .theme-toggle label::after, .app-icon, .profile-pic, .profile-pic span, .fav-icon, .theme-toggle, .theme-toggle label, #landing h1 span, #landing p, .instagram .insta-right, #favicon img, .explore-button {
+                transition: none !important;
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+    <h1>KREW Brand Guidelines Preview</h1>
+
+    <section id="landing">
+        <div class="hero-logo-placeholder">K</div> <h1>Welcome to <span>KREW</span></h1>
+        <p>Your minimalist modern music platform. Discover, stream, and curate your ultimate playlist. Designed for pure auditory focus with sleek dark aesthetics and vibrant neon purple accents.</p>
+        </section>
+
+    <section id="icons">
+        <h2>App Icons</h2>
+        <div class="icon-grid">
+            <div class="app-icon">K</div> <div class="app-icon">K</div>
+            <div class="app-icon">K</div>
+            <div class="app-icon">K</div>
+            <div class="app-icon">K</div>
+            <div class="app-icon">K</div>
+            </div>
+    </section>
+
+    <section id="instagram">
+        <h2>Instagram Profile Preview</h2>
+        <div class="insta-left">
+            <div class="profile-pic"><span>K</span></div> </div>
+        <div class="insta-right">
+            <div class="username">krew_app</div>
+            <div class="stats">
+                <span>12.5k Followers</span>
+                <span>•</span>
+                <span>180 Following</span>
+                <span>•</span>
+                <span>45 Posts</span>
+            </div>
+            <p class="bio">
+                Official profile for Krew Music App 🎵<br>
+                Elevate your sound. Modern minimalist music platform.<br>
+                Dark mode, purple neon vibes. Pure auditory focus.<br>
+                🔗 <a href="#">linkinbio.com/krew</a>
+            </p>
+        </div>
+    </section>
+
+    <section id="favicon">
+        <h2>Favicon Preview</h2>
+        <div class="fav-preview">
+            <h3>16x16 pixels</h3>
+            <div class="fav-icon fav-icon-16">K</div> </div>
+        <div class="fav-preview">
+            <h3>32x32 pixels</h3>
+            <div class="fav-icon fav-icon-32">K</div> </div>
+    </section>
+
+    <div class="theme-toggle">
+        <input type="checkbox" id="themeSwitch">
+        <label for="themeSwitch"></label>
+        <span id="themeLabel">Dark Mode</span>
+    </div>
+
+    <script>
+        const themeSwitch = document.getElementById('themeSwitch');
+        const body = document.body;
+        const themeLabel = document.getElementById('themeLabel');
+
+        // Check local storage for existing theme preference on load
+        const currentTheme = localStorage.getItem('theme') ? localStorage.getItem('theme') : null;
+        if (currentTheme) {
+            body.classList.add(currentTheme);
+            if (currentTheme === 'light-mode') {
+                themeSwitch.checked = true;
+                themeLabel.textContent = 'Light Mode';
+            }
+        }
+
+        // Add event listener to toggle theme on switch change
+        themeSwitch.addEventListener('change', function() {
+            if (this.checked) {
+                body.classList.add('light-mode');
+                themeLabel.textContent = 'Light Mode';
+                localStorage.setItem('theme', 'light-mode'); // Persist preference
+            } else {
+                body.classList.remove('light-mode');
+                themeLabel.textContent = 'Dark Mode';
+                localStorage.setItem('theme', ''); // Reset preference (or store 'dark-mode' explicitly)
+            }
+        });
+    </script>
+
+</body>
+</html>

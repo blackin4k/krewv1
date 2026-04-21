@@ -46,6 +46,11 @@ const StreakCard = () => {
         );
     }
 
+    const displayGenre =
+        stats?.top_genre && stats.top_genre.toLowerCase() !== 'unknown'
+            ? stats.top_genre
+            : null;
+
     return (
         <motion.div
             initial={{ opacity: 0, y: 6 }}
@@ -69,7 +74,18 @@ const StreakCard = () => {
 
                     <div className="flex items-center gap-2 text-[14px] text-[#E0E7FF]/80">
                         <Music className="w-3.5 h-3.5" />
-                        <span><span className="text-white font-medium">{stats?.top_genre}</span> dominating your week</span>
+                        {displayGenre ? (
+                            <span>
+                                <span className="text-white font-medium">
+                                    {displayGenre}
+                                </span>{' '}
+                                dominating your week
+                            </span>
+                        ) : (
+                            <span className="text-[#E0E7FF]/70">
+                                Your vibe is still evolving
+                            </span>
+                        )}
                     </div>
                 </div>
             </div>
@@ -78,3 +94,4 @@ const StreakCard = () => {
 };
 
 export default StreakCard;
+

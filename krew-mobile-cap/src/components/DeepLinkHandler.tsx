@@ -12,49 +12,40 @@ const DeepLinkHandler = () => {
     const { setJamId } = useJamStore();
 
     useEffect(() => {
-        App.addListener('appUrlOpen', async (event: URLOpenListenerEvent) => {
+        let listener: any;
+
+        App.addListener('appUrlOpen', async (event) => {
             const url = new URL(event.url);
             let type = '';
             let id = '';
 
-            // Handle HTTPS Links (https://api.kreewaux.xyz/song/123)
             if (url.protocol === 'https:' && url.host === 'api.kreewaux.xyz') {
-                const parts = url.pathname.split('/').filter(Boolean); // ['song', '123']
+                const parts = url.pathname.split('/').filter(Boolean);
                 if (parts.length >= 2) {
                     type = parts[0];
                     id = parts[1];
                 }
-            }
-            // Handle Custom Scheme (krew://song/123)
-            else if (url.protocol.includes('krew')) {
+            } else if (url.protocol.includes('krew')) {
                 type = url.host;
                 id = url.pathname.replace('/', '');
             }
 
-            console.log('Deep Link:', { type, id, url: event.url });
-
             if (type === 'song' && id) {
                 try {
-                    toast.info('Loading shared song...');
-                    const songId = parseInt(id);
-                    // Fetch song and play
-                    const res = await songsApi.get(songId);
-
-                    if (res.data) {
-                        playSong(res.data);
-                        setExpanded(true); // Auto-expand player
-                    }
-                } catch (e) {
-                    console.error('Deep link song error', e);
+                    const res = await songsApi.get(parseInt(id));
+                    playSong(res.data);
+                    setExpanded(true);
+                } catch {
                     toast.error('Could not load shared song.');
                 }
             }
-            else if (type === 'jam' && id) {
-                setJamId(id);
-                navigate('/jam');
-                toast.info(`Joining Jam ${id}...`);
-            }
+        }).then(handle => {
+            listener = handle;
         });
+
+        return () => {
+            listener?.remove();
+        };
     }, [navigate]);
 
     return null;

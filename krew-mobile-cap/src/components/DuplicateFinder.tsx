@@ -52,9 +52,9 @@ export default function DuplicateFinder() {
                             <p>Scanning library...</p>
                         </div>
                     ) : duplicates.length === 0 ? (
-                        <div className="text-center py-8 text-green-400">
-                            <p className="text-lg font-bold">Clean!</p>
-                            <p className="text-sm text-green-400/70">No duplicate songs found.</p>
+                        <div className="text-center py-8 text-blue-400">
+                            <CheckCircle2 className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                            <p className="text-sm text-blue-400/70">No duplicate songs found.</p>
                         </div>
                     ) : (
                         <>

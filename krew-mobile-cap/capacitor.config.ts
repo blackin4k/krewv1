@@ -12,6 +12,7 @@ const config: CapacitorConfig = {
       'https://*.kreewaux.xyz',
       'https://*.r2.dev',
       'https://pub-*.r2.dev'
+	
     ]
   },
   android: {

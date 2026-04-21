@@ -110,6 +110,11 @@ interface PlayerState {
   updateMediaSession: () => void;
   _logDuration: () => void;
   cleanupAudio: () => void;
+
+  // Kill limit
+  _idleTimeout: NodeJS.Timeout | null;
+  setIdleTimeout: () => void;
+  clearIdleTimeout: () => void;
 }
 
 export const usePlayerStore = create<PlayerState>((set, get) => ({
@@ -142,6 +147,33 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
   _gainA: null,
   _gainB: null,
   _sleepTimeout: null,
+  _idleTimeout: null,
+  setIdleTimeout: () => {
+    const { clearIdleTimeout, pause } = get();
+    clearIdleTimeout();
+    // 5 minutes — pause only, keep audio context alive for notification
+    const timeout = setTimeout(() => {
+      pause();
+      if (Capacitor.isNativePlatform()) {
+        isControlsCreated = false;
+        nativePreviousSongId = null;
+      }
+
+      // 🔥 DO NOT cleanup immediately — keep audio context alive for notification
+      // Delayed cleanup after 30 min of continued inactivity
+      setTimeout(() => {
+        if (!get().isPlaying) {
+          get().cleanupAudio();
+        }
+      }, 1800000); // 30 min
+    }, 300000);
+    set({ _idleTimeout: timeout });
+  },
+  clearIdleTimeout: () => {
+    const { _idleTimeout } = get();
+    if (_idleTimeout) clearTimeout(_idleTimeout);
+    set({ _idleTimeout: null });
+  },
   _activeAudio: 'A',
   _isCrossfading: false,
   _audioCtx: null,
@@ -204,9 +236,9 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
     _audioA?.load();
     _audioB?.load();
 
-    // Close AudioContext if running (Releases hardware on Android)
+    // Suspend AudioContext instead of closing (keeps notification alive, allows resume)
     if (_audioCtx && _audioCtx.state !== 'closed') {
-      _audioCtx.close().catch(console.error);
+      _audioCtx.suspend().catch(console.error);
     }
 
     set({
@@ -283,40 +315,45 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
             audio.onplay = null;
             audio.onpause = null;
 
+            let lastSync = 0;
+
             audio.addEventListener('timeupdate', () => {
               const state = get();
+
               if ((state._audioA === audio && state._activeAudio === 'A') ||
                 (state._audioB === audio && state._activeAudio === 'B')) {
+
                 set({ progress: audio.currentTime, duration: audio.duration || 0 });
+
+                const now = Date.now();
+
+                if (Capacitor.isNativePlatform() && now - lastSync > 1000) {
+                  lastSync = now;
+
+                  MusicControls.updateElapsed({
+                    elapsed: audio.currentTime,
+                    isPlaying: state.isPlaying
+                  });
+                }
+
                 const timeLeft = audio.duration - audio.currentTime;
                 if (timeLeft > 0 && timeLeft <= state.crossfadeDuration && !state._isCrossfading && state.queue.length > 0) {
                   get()._handleCrossfadeAuto();
                 }
               }
             });
-            audio.addEventListener('ended', () => {
-              if (get()._isCrossfading) return;
-              if (get().repeat === 'one') {
-                get().recordPlay();
-                audio.currentTime = 0;
-                audio.play();
-                return;
-              }
-
-              // CRITICAL FIX: Keep service alive during transition
-              // Update notification BEFORE calling next() to prevent service termination
-              set({ isLoadingNext: true });
-              if (Capacitor.isNativePlatform()) {
-                // Keep notification alive with current song but loading state
-                updateNativeControls({ ...get(), isPlaying: true }, false);
-              }
-              get().next();
+            audio.addEventListener('play', () => {
+              set({ isPlaying: true, lastPlayStart: Date.now() });
+              get().clearIdleTimeout();
+              if (ctx.state === 'suspended') ctx.resume();
             });
-            audio.addEventListener('play', () => { set({ isPlaying: true, lastPlayStart: Date.now() }); if (ctx.state === 'suspended') ctx.resume(); });
             audio.addEventListener('pause', () => {
               get()._logDuration();
               set({ lastPlayStart: 0 });
-              if (!get()._isCrossfading && !get().isLoadingNext) set({ isPlaying: false });
+              if (!get()._isCrossfading && !get().isLoadingNext) {
+                set({ isPlaying: false });
+                get().setIdleTimeout();
+              }
             });
           };
           setupEvents(audioA);
@@ -523,6 +560,7 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
 
           audio.addEventListener('play', () => {
             set({ isPlaying: true, lastPlayStart: Date.now() });
+            get().clearIdleTimeout();
             if (ctx.state === 'suspended') ctx.resume();
           });
 
@@ -550,6 +588,7 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
             // This prevents the OS from killing the background service
             if (!get()._isCrossfading && !get().isLoadingNext) {
               set({ isPlaying: false });
+              get().setIdleTimeout();
             }
           });
         };
@@ -618,7 +657,16 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
       }
       oppositeAudio.pause();
 
-      audio.src = data.audio || songsApi.stream(song.id);
+      // Future Playback Switch for Offline files
+      const offlineSong = song as any;
+      if (offlineSong.local && offlineSong.filePath) {
+        audio.src = Capacitor.isNativePlatform()
+          ? Capacitor.convertFileSrc(offlineSong.filePath)
+          : (data.audio || songsApi.stream(song.id));
+      } else {
+        audio.src = data.audio || songsApi.stream(song.id);
+      }
+
       audio.load();
       await audio.play();
 
@@ -1082,6 +1130,9 @@ const updateNativeControls = async (state: PlayerState, songChanged: boolean = f
         hasPrev: true,
         hasNext: true,
         hasClose: true,
+        hasScrubbing: true,
+        duration: state.duration || 0,
+        elapsed: state.progress || 0,
         playIcon: 'media_play',
         pauseIcon: 'media_pause',
         prevIcon: 'media_prev',
@@ -1114,6 +1165,16 @@ const updateNativeControls = async (state: PlayerState, songChanged: boolean = f
             // User swiped away (if dismissable) or closed
             store.pause();
             break;
+          case 'music-controls-seek-to':
+            try {
+              const seekDetail = e.detail !== undefined ? e.detail : e.message;
+              const parsed = typeof seekDetail === 'string' ? JSON.parse(seekDetail) : seekDetail;
+              if (parsed && parsed.position !== undefined) {
+                store.seek(parsed.position);
+                store.setProgress(parsed.position);
+              }
+            } catch (err) { console.error("Seek parse err", err); }
+            break;
           case 'music-controls-toggle-play-pause': // Headset events
             if (store.isPlaying) store.pause();
             else store.resume();
@@ -1137,6 +1198,9 @@ const updateNativeControls = async (state: PlayerState, songChanged: boolean = f
           hasPrev: true,
           hasNext: true,
           hasClose: true,
+          hasScrubbing: true,
+          duration: state.duration || 0,
+          elapsed: state.progress || 0,
           playIcon: 'media_play',
           pauseIcon: 'media_pause',
           prevIcon: 'media_prev',
@@ -1163,21 +1227,15 @@ usePlayerStore.subscribe((state) => {
   // 1. Song Changed -> Update Controls with new metadata
   if (currentSongId !== nativePreviousSongId) {
     nativePreviousSongId = currentSongId;
-    updateNativeControls(state, true); // Pass true for songChanged
+    updateNativeControls(state, true);
   }
   // 2. Playback State Changed -> Update isPlaying only
   else if (nativePreviousIsPlaying !== isPlaying) {
     nativePreviousIsPlaying = isPlaying;
 
-    if (!isPlaying) {
-      if (Capacitor.isNativePlatform()) {
-        MusicControls.destroy();
-        isControlsCreated = false;
-        nativePreviousSongId = null;
-      }
-    } else {
-      updateNativeControls(state, false); // Pass false for songChanged
-    }
+    // ❌ DO NOT DESTROY
+    // ✅ just update state
+    updateNativeControls(state, false);
   }
 });
 

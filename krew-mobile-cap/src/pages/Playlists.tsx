@@ -36,7 +36,7 @@ const Playlists = () => {
 
     try {
       const res = await playlistsApi.create(newPlaylistName);
-      setPlaylists([...playlists, { id: res.data.id, name: res.data.name }]);
+      setPlaylists((prev) => [...prev, res.data]);
       setNewPlaylistName('');
       setDialogOpen(false);
       toast({ title: 'Playlist created!' });

@@ -1,6 +1,6 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Search as SearchIcon, X, Filter } from 'lucide-react';
+import { Search as SearchIcon, X, Filter, Play } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import SongCard from '@/components/SongCard';
@@ -12,9 +12,13 @@ import { usePlayerStore } from '@/stores/playerStore';
 
 const Search = () => {
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<Song[]>([]);
-  const [topMatch, setTopMatch] = useState<Song | null>(null);
-  const [recommended, setRecommended] = useState<Song[]>([]);
+  const [searchData, setSearchData] = useState({
+    topMatch: null as Song | null,
+    results: [] as Song[],
+    recommended: [] as Song[]
+  });
+  const cache = useRef<Record<string, any>>({});
+  const abortControllerRef = useRef<AbortController | null>(null);
   const [trending, setTrending] = useState<Song[]>([]);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [genres, setGenres] = useState<Genre[]>([]);
@@ -47,14 +51,38 @@ const Search = () => {
   useEffect(() => {
     const searchSongs = async () => {
       if (!query.trim() && !selectedGenre) {
-        setResults([]);
-        setTopMatch(null);
+        setSearchData({ topMatch: null, results: [], recommended: [] });
         setHasSearched(false);
         return;
       }
 
-      setLoading(true);
       setHasSearched(true);
+      
+      let finalQuery = query.trim();
+      const lowerQuery = finalQuery.toLowerCase();
+      const moodMap: Record<string, string> = {
+        'sad': 'melancholy',
+        'sad songs': 'melancholy',
+        'gym': 'workout',
+        'gym songs': 'workout',
+        'workout': 'workout',
+        'late night drive': 'chill',
+        'chill': 'chill',
+        'study': 'lo-fi',
+      };
+      if (moodMap[lowerQuery]) {
+        finalQuery = moodMap[lowerQuery];
+      }
+
+      const cacheKey = `${finalQuery}-${selectedGenre || ''}`;
+
+      if (cache.current[cacheKey]) {
+        setSearchData(cache.current[cacheKey]);
+        setLoading(false);
+        return;
+      }
+
+      setLoading(true);
 
       // Save to recent searches if typing stopped (debounce limit)
       if (query.trim().length > 2 && !recentSearches.includes(query.trim())) {
@@ -63,24 +91,52 @@ const Search = () => {
         localStorage.setItem('recentSearches', JSON.stringify(updated));
       }
 
-      try {
-        const res = await songsApi.search(query, selectedGenre || undefined);
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+      abortControllerRef.current = new AbortController();
 
-        if (res.data.top_match !== undefined) {
-          setTopMatch(res.data.top_match);
-          setResults(res.data.results || []);
-          setRecommended([]); // Clear old recs
+      try {
+        const res = await songsApi.search(finalQuery, selectedGenre || undefined, undefined, {
+          signal: abortControllerRef.current.signal
+        });
+
+        let newData: { topMatch: Song | null, results: Song[], recommended: Song[] } = {
+          topMatch: null,
+          results: [],
+          recommended: []
+        };
+
+        if (!res.data || (Array.isArray(res.data) && res.data.length === 0) || (res.data.results && res.data.results.length === 0 && !res.data.top_match)) {
+          // Keep empty struct
+        } else if (res.data.top_match !== undefined) {
+          newData = {
+            topMatch: res.data.top_match,
+            results: res.data.results || [],
+            recommended: []
+          };
         } else if (Array.isArray(res.data)) {
           // Fallback
-          setResults(res.data);
-          setTopMatch(null);
+          newData = {
+            topMatch: null,
+            results: res.data,
+            recommended: []
+          };
         } else {
-          setResults(res.data.results || []);
-          setRecommended(res.data.recommended || []);
-          setTopMatch(null);
+          newData = {
+            topMatch: null,
+            results: res.data.results || [],
+            recommended: res.data.recommended || []
+          };
         }
 
-      } catch (error) {
+        cache.current[cacheKey] = newData;
+        setSearchData(newData);
+
+      } catch (error: any) {
+        if (error.name === 'CanceledError' || error.message === 'canceled') {
+          return; // Ignore aborted requests
+        }
         console.error('Search failed:', error);
       } finally {
         setLoading(false);
@@ -94,8 +150,7 @@ const Search = () => {
   const clearSearch = () => {
     setQuery('');
     setSelectedGenre(null);
-    setResults([]);
-    setTopMatch(null);
+    setSearchData({ topMatch: null, results: [], recommended: [] });
     setHasSearched(false);
   };
 
@@ -140,7 +195,10 @@ const Search = () => {
             {genres.slice(0, 8).map((genre) => (
               <button
                 key={genre.genre}
-                onClick={() => setSelectedGenre(selectedGenre === genre.genre ? null : genre.genre)}
+                onClick={() => {
+                  setSelectedGenre(selectedGenre === genre.genre ? null : genre.genre);
+                  if (query) setQuery('');
+                }}
                 className={cn(
                   'px-4 py-1.5 rounded-full text-[13px] font-semibold transition-all border whitespace-nowrap',
                   selectedGenre === genre.genre
@@ -160,28 +218,42 @@ const Search = () => {
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
           {loading ? (
             <div className="text-center py-10 text-muted-foreground text-sm">Searching...</div>
-          ) : results.length > 0 || topMatch ? (
+          ) : searchData.results.length > 0 || searchData.topMatch ? (
             <>
               {/* TOP RESULT */}
-              {topMatch && (
+              {searchData.topMatch && (
                 <div className="mb-6">
                   <h3 className="text-[14px] font-bold text-[#A1A1AA] uppercase tracking-wider mb-3">Top Result</h3>
                   <div
-                    onClick={() => playSong(topMatch)}
-                    className="bg-[#18181B] p-4 rounded-[20px] flex items-center gap-4 cursor-pointer hover:bg-[#202022] transition-colors border border-white/5"
+                    onClick={() => playSong(searchData.topMatch!)}
+                    className="relative bg-[#18181B] p-4 rounded-[20px] flex items-center gap-4 cursor-pointer hover:bg-[#202022] transition-colors border border-white/5 group hover:scale-[1.02] duration-300 ease-out overflow-hidden"
                   >
-                    <div className="w-[80px] h-[80px] rounded-full overflow-hidden shrink-0 shadow-lg">
-                      {topMatch.cover ? (
-                        <img src={topMatch.cover} className="w-full h-full object-cover" />
+                    {/* Gradient Glow */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-[#6F8CFF]/10 to-[#3b82f6]/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+
+                    <div className="w-[80px] h-[80px] rounded-full overflow-hidden shrink-0 shadow-lg relative">
+                      {searchData.topMatch.cover ? (
+                        <img 
+                          src={searchData.topMatch.cover} 
+                          className="w-full h-full object-cover" 
+                          onError={(e) => { e.currentTarget.src = 'https://placehold.co/80x80/282828/FFF?text=Music'; }}
+                        />
                       ) : (
                         <div className="w-full h-full bg-[#333]" />
                       )}
+
+                      {/* Play Overlay */}
+                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                         <div className="h-10 w-10 bg-[#3b82f6] rounded-full flex items-center justify-center text-black shadow-lg">
+                           <Play className="h-5 w-5 fill-black ml-1" />
+                         </div>
+                      </div>
                     </div>
                     <div>
-                      <div className="text-[20px] font-bold text-white mb-1 line-clamp-1">{topMatch.title}</div>
+                      <div className="text-[20px] font-bold text-white mb-1 line-clamp-1 group-hover:text-[#3b82f6] transition-colors">{searchData.topMatch.title}</div>
                       <div className="text-[15px] text-[#A1A1AA] flex items-center gap-2">
                         <span className="text-white bg-[#27272A] px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wide">Song</span>
-                        <span>{topMatch.artist}</span>
+                        <span>{searchData.topMatch.artist}</span>
                       </div>
                     </div>
                   </div>
@@ -195,8 +267,15 @@ const Search = () => {
               </div>
 
               <div className="flex flex-col gap-1">
-                {results.map((song, i) => (
-                  <SongCard key={song.id} song={song} index={i} variant="list" />
+                {searchData.results.map((song, i) => (
+                  <motion.div
+                    key={song.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.03 }}
+                  >
+                    <SongCard song={song} index={i} variant="list" />
+                  </motion.div>
                 ))}
               </div>
             </>
@@ -214,53 +293,71 @@ const Search = () => {
 
           {/* RECENT SEARCHES */}
           {recentSearches.length > 0 && (
-            <section>
+            <section className="mb-2">
               <div className="flex justify-between items-center mb-3">
                 <h3 className="text-[16px] font-bold text-white">Recent Searches</h3>
-                {recentSearches.length > 0 && (
-                  <button onClick={() => {
-                    setRecentSearches([]);
-                    localStorage.removeItem('recentSearches');
-                  }} className="text-[12px] text-[#A1A1AA] hover:text-white">Clear</button>
-                )}
+                <button onClick={() => {
+                  setRecentSearches([]);
+                  localStorage.removeItem('recentSearches');
+                }} className="text-[12px] text-[#A1A1AA] hover:text-white transition-colors">Clear</button>
               </div>
               <div className="flex flex-wrap gap-2">
                 {recentSearches.map(term => (
-                  <div key={term} className="group flex items-center gap-2 bg-[#18181B] pl-4 pr-2 py-2 rounded-full border border-white/5">
-                    <span onClick={() => setQuery(term)} className="text-[13px] font-medium text-[#E4E4E7] cursor-pointer hover:text-white">{term}</span>
-                    <X onClick={() => removeRecent(term)} className="w-3.5 h-3.5 text-[#52525B] cursor-pointer hover:text-[#EF4444]" />
+                  <div key={term} className="group flex items-center gap-2 bg-[#18181B] pl-4 pr-2 py-2 rounded-full border border-white/5 hover:bg-[#202022] transition-colors">
+                    <span onClick={() => setQuery(term)} className="text-[13px] font-medium text-[#E4E4E7] cursor-pointer group-hover:text-white transition-colors">{term}</span>
+                    <X onClick={() => removeRecent(term)} className="w-3.5 h-3.5 text-[#52525B] cursor-pointer hover:text-[#EF4444] transition-colors" />
                   </div>
                 ))}
               </div>
             </section>
           )}
 
-          {/* TRENDING */}
-          <section>
-            <div className="flex items-center gap-2 mb-4">
-              <div className="p-1.5 bg-blue-500/10 rounded-full">
-                <Filter className="w-3.5 h-3.5 text-blue-400" />
+          {/* BECAUSE YOU SEARCHED */}
+          {recentSearches.length > 0 && trending.length > 0 && (
+            <motion.section 
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}
+              className="mt-6"
+            >
+              <h3 className="text-[16px] font-bold text-white mb-4">Because you searched "{recentSearches[0]}"</h3>
+              <div className="flex overflow-x-auto gap-3 pb-4 scrollbar-hide -mx-4 px-4 pl-4">
+                {trending.slice(0, 5).map((song) => (
+                  <div key={`because-${song.id}`} className="min-w-[140px] shrink-0">
+                    <SongCard song={song} variant="grid" />
+                  </div>
+                ))}
               </div>
-              <h3 className="text-[16px] font-bold text-white">Trending Now</h3>
+            </motion.section>
+          )}
+
+          {/* CONTINUE LISTENING (Intelligent Dummy) */}
+          <motion.section 
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
+            className={recentSearches.length > 0 ? "mt-4" : ""}
+          >
+            <div className="flex items-center gap-2 mb-4">
+              <div className="p-1.5 bg-[#3b82f6]/10 rounded-full">
+                <Play className="w-3.5 h-3.5 fill-[#3b82f6] text-[#3b82f6]" />
+              </div>
+              <h3 className="text-[16px] font-bold text-white">Continue Listening</h3>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              {trending.slice(0, 4).map((song, i) => (
-                <div key={song.id} onClick={() => playSong(song)} className="flex items-center gap-3 bg-[#18181B] p-2 rounded-[12px] cursor-pointer hover:bg-[#202022] transition-colors group">
-                  <div className="w-[48px] h-[48px] rounded-[8px] overflow-hidden relative">
-                    {song.cover && <img src={song.cover} className="w-full h-full object-cover" />}
-                    <div className="absolute inset-0 bg-black/20 hidden group-hover:flex items-center justify-center">
-                      <SearchIcon className="w-4 h-4 text-white" />
+              {trending.slice(recentSearches.length > 0 ? 5 : 0, recentSearches.length > 0 ? 9 : 4).map((song) => (
+                <div key={song.id} onClick={() => playSong(song)} className="flex items-center gap-3 bg-[#18181B] p-2 rounded-[12px] cursor-pointer hover:bg-[#202022] transition-colors group border border-white/5">
+                  <div className="w-[48px] h-[48px] rounded-[8px] overflow-hidden relative shrink-0">
+                    {song.cover && <img src={song.cover} className="w-full h-full object-cover" onError={(e) => { e.currentTarget.src = 'https://placehold.co/48x48/282828/FFF?text=Music'; }} />}
+                    <div className="absolute inset-0 bg-black/40 hidden group-hover:flex items-center justify-center transition-all">
+                      <Play className="w-4 h-4 fill-white text-white" />
                     </div>
                   </div>
-                  <div className="min-w-0">
-                    <div className="text-[13px] font-semibold text-white truncate">{song.title}</div>
+                  <div className="min-w-0 pr-2">
+                    <div className="text-[13px] font-semibold text-white truncate group-hover:text-[#3b82f6] transition-colors">{song.title}</div>
                     <div className="text-[11px] text-[#A1A1AA] truncate">{song.artist}</div>
                   </div>
                 </div>
               ))}
             </div>
-          </section>
+          </motion.section>
 
           {/* BROWSE ALL */}
           <section className="pt-4">

@@ -1,10 +1,11 @@
-import { useState } from "react"
+import React, { useState } from "react"
 import { toast } from "sonner"
 import AddToPlaylistModal from "@/components/AddToPlaylistModal"
-import { MoreVertical, Play, Pause, Heart, Plus, Radio } from "lucide-react"
+import { MoreVertical, Play, Pause, Heart, Plus, Radio, Download, Check, Loader2 } from "lucide-react"
 import { motion } from "framer-motion"
 import { Song } from "@/types/music"
 import { usePlayerStore } from "@/stores/playerStore"
+import { useOfflineStore } from "@/stores/offlineStore"
 import { cn } from "@/lib/utils"
 import {
   DropdownMenu,
@@ -28,7 +29,11 @@ import { API_URL } from "@/lib/api"
 const SongCard = ({ song, index, showIndex, compact, variant = 'grid', onSongAdded, onBecauseYouListened }: SongCardProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const { currentSong, isPlaying, playSong, togglePlay } = usePlayerStore()
+  const { downloadSong, isDownloaded, removeSong, isDownloading } = useOfflineStore()
+  
   const isCurrentSong = currentSong?.id === song.id
+  const downloaded = isDownloaded(song.id)
+  const downloading = isDownloading[song.id]
 
 
   const handlePlay = (e: React.MouseEvent) => {
@@ -72,9 +77,9 @@ const SongCard = ({ song, index, showIndex, compact, variant = 'grid', onSongAdd
               <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
                 {isPlaying && isCurrentSong ? (
                   <div className="flex gap-1">
-                    <div className="w-1 h-3 bg-[#1DB954] animate-[bounce_1s_infinite]" />
-                    <div className="w-1 h-3 bg-[#1DB954] animate-[bounce_1s_infinite_0.1s]" />
-                    <div className="w-1 h-3 bg-[#1DB954] animate-[bounce_1s_infinite_0.2s]" />
+                    <div className="w-1 h-3 bg-[#3b82f6] animate-[bounce_1s_infinite]" />
+                    <div className="w-1 h-3 bg-[#3b82f6] animate-[bounce_1s_infinite_0.1s]" />
+                    <div className="w-1 h-3 bg-[#3b82f6] animate-[bounce_1s_infinite_0.2s]" />
                   </div>
                 ) : (
                   <Play className="h-5 w-5 fill-white text-white" />
@@ -85,7 +90,7 @@ const SongCard = ({ song, index, showIndex, compact, variant = 'grid', onSongAdd
 
           {/* Text */}
           <div className="flex-1 min-w-0 px-3 flex flex-col justify-center">
-            <h4 className={cn("font-bold text-[13px] leading-tight truncate", isCurrentSong ? "text-[#1DB954]" : "text-white")}>
+            <h4 className={cn("font-bold text-[13px] leading-tight truncate", isCurrentSong ? "text-[#3b82f6]" : "text-white")}>
               {song.title}
             </h4>
           </div>
@@ -131,7 +136,7 @@ const SongCard = ({ song, index, showIndex, compact, variant = 'grid', onSongAdd
           </div>
 
           <div className="flex-1 min-w-0 flex flex-col justify-center">
-            <h4 className={cn("font-medium text-[16px] truncate leading-tight", isCurrentSong ? "text-[#1DB954]" : "text-white")}>
+            <h4 className={cn("font-medium text-[16px] truncate leading-tight", isCurrentSong ? "text-[#3b82f6]" : "text-white")}>
               {song.title}
             </h4>
             <div className="flex items-center gap-1 mt-0.5">
@@ -154,6 +159,23 @@ const SongCard = ({ song, index, showIndex, compact, variant = 'grid', onSongAdd
               </DropdownMenuItem>
               <DropdownMenuItem onClick={handleAddToPlaylist} className="hover:bg-[#3E3E3E] rounded-sm focus:bg-[#3E3E3E] cursor-pointer">
                 <Plus className="w-4 h-4 mr-3" /> Add to Playlist
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={(e) => { 
+                  e.stopPropagation(); 
+                  if (downloaded) {
+                    removeSong(song.id);
+                  } else {
+                    downloadSong(song);
+                  }
+                }} 
+                disabled={downloading}
+                className="hover:bg-[#3E3E3E] rounded-sm focus:bg-[#3E3E3E] cursor-pointer"
+              >
+                {downloading ? <Loader2 className="w-4 h-4 mr-3 animate-spin text-[#3b82f6]" /> : 
+                 downloaded ? <Check className="w-4 h-4 mr-3 text-[#3b82f6]" /> : 
+                 <Download className="w-4 h-4 mr-3" />}
+                {downloading ? "Downloading..." : downloaded ? "Downloaded" : "Download"}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={(e) => { e.stopPropagation(); }} className="hover:bg-[#3E3E3E] rounded-sm focus:bg-[#3E3E3E] cursor-pointer">
                 <Heart className="w-4 h-4 mr-3" /> Like (Coming Soon)
@@ -201,7 +223,7 @@ const SongCard = ({ song, index, showIndex, compact, variant = 'grid', onSongAdd
           <div
             className="absolute bottom-2 right-2 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] shadow-[0_8px_8px_rgba(0,0,0,0.3)] z-20"
           >
-            <div className="h-12 w-12 rounded-full bg-[#1DB954] text-black flex items-center justify-center hover:scale-105 active:scale-95 active:bg-[#1ed760] transition-transform">
+            <div className="h-12 w-12 rounded-full bg-[#3b82f6] text-black flex items-center justify-center hover:scale-105 active:scale-95 active:bg-[#60a5fa] transition-transform">
               {isCurrentSong && isPlaying ? (
                 <Pause className="h-6 w-6 fill-black" />
               ) : (
@@ -214,7 +236,7 @@ const SongCard = ({ song, index, showIndex, compact, variant = 'grid', onSongAdd
 
         {/* TEXT */}
         <div className="flex flex-col gap-1">
-          <h3 className={cn("font-bold truncate text-[16px] leading-tight", isCurrentSong ? "text-[#1DB954]" : "text-white")}>
+          <h3 className={cn("font-bold truncate text-[16px] leading-tight", isCurrentSong ? "text-[#3b82f6]" : "text-white")}>
             {song.title}
           </h3>
           <p className="text-[14px] text-[#B3B3B3] truncate line-clamp-2 leading-tight">
@@ -234,4 +256,4 @@ const SongCard = ({ song, index, showIndex, compact, variant = 'grid', onSongAdd
   )
 }
 
-export default SongCard
+export default React.memo(SongCard)

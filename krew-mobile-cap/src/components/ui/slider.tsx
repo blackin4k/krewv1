@@ -32,7 +32,7 @@ const Slider = React.forwardRef<
       {/* PROGRESS */}
       <SliderPrimitive.Range
         className="absolute rounded-full data-[orientation=horizontal]:h-full data-[orientation=vertical]:w-full"
-        style={{ backgroundColor: color || '#22c55e' }} // Default to tailwind green-500 (#22c55e) if no color
+        style={{ backgroundColor: color || '#3b82f6' }} // Default to tailwind blue-500 if no color
       />
     </SliderPrimitive.Track>
 
@@ -53,7 +53,7 @@ const Slider = React.forwardRef<
         disabled:opacity-50
         cursor-pointer
       "
-      style={{ backgroundColor: color || '#22c55e' }}
+      style={{ backgroundColor: color || '#3b82f6' }}
     />
   </SliderPrimitive.Root>
 ))

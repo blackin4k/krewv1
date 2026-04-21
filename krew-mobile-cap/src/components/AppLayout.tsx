@@ -4,6 +4,7 @@ import Sidebar from "./Sidebar";
 import MobileNav from "./MobileNav";
 import Player from "./Player";
 import Visualizer from "./Visualizer";
+import OfflineBanner from "./OfflineBanner";
 import { JamManager } from "./JamManager";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -17,6 +18,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-[#0a0a0a]">
+      <OfflineBanner />
       {/* Background Visualizer - Taller and Behind Content */}
       <Visualizer className="absolute bottom-0 left-0 w-full h-[60%] pointer-events-none z-0 opacity-40 mix-blend-screen" />
       <JamManager />

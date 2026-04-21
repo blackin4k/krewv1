@@ -43,9 +43,7 @@ export const SidebarContent = ({ onNavigate, mode = 'desktop' }: { onNavigate?: 
     { to: '/radio', icon: Radio, label: 'Radio' },
     { to: '/upload', icon: Upload, label: 'Upload' },
     { to: '/jam', icon: Users, label: 'Jam' },
-    { to: '/the-lab', icon: FlaskConical, label: 'The Lab' },
-    { to: '/dig', icon: Disc3, label: 'Crate Digger' },
-    { to: '/galaxy', icon: Orbit, label: 'Sonic Galaxy' },
+
   ].filter(item => {
     if (mode === 'mobile') {
       // Hide Search, Library, and The Lab on mobile

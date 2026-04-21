@@ -1,8 +1,8 @@
-import { useEffect, useRef, useState, useMemo } from "react";
+import React, { useEffect, useRef, useState, useMemo, memo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Visualizer from "./Visualizer";
 import { useDominantColor } from "@/hooks/useDominantColor";
-
+import { Cast } from "lucide-react";
 import AudioDashboard from "./AudioDashboard";
 import api, { songsApi, configureJamPlayback, playlistsApi, API_URL } from "@/lib/api";
 import {
@@ -155,7 +155,7 @@ const parseLyrics = (lrc: string) => {
   return result;
 };
 
-function LyricsOverlay({ lyrics, progress, onSeek, coverUrl, uiColor }: {
+const LyricsOverlay = memo(function LyricsOverlay({ lyrics, progress, onSeek, coverUrl, uiColor }: {
   lyrics: string | null,
   progress: number,
   onSeek: (time: number) => void,
@@ -271,7 +271,7 @@ function LyricsOverlay({ lyrics, progress, onSeek, coverUrl, uiColor }: {
       </div>
     </motion.div>
   );
-}
+});
 
 export default function Player() {
 
@@ -332,9 +332,9 @@ export default function Player() {
 
   useEffect(() => {
     initAudio()
-    // Cleanup when component unmounts (e.g. app verification/re-render)
-    // NOTE: In a single-page app this rarely unmounts, but it's good practice.
-    // For specific Android lifecycle, we rely on the singleton pattern in store.
+    return () => {
+      usePlayerStore.getState().audio?.pause()
+    }
   }, [initAudio])
 
   useEffect(() => {
@@ -344,15 +344,18 @@ export default function Player() {
     });
   }, []);
 
+  const lastFetched = useRef<number | null>(null);
+
   // Auto-fetch lyrics when song changes
   useEffect(() => {
-    if (currentSong && !lyrics) {
+    if (currentSong && !lyrics && currentSong.id !== lastFetched.current) {
+      lastFetched.current = currentSong.id;
       const timer = setTimeout(() => {
         usePlayerStore.getState().fetchLyrics();
       }, 500);
       return () => clearTimeout(timer);
     }
-  }, [currentSong?.id]);
+  }, [currentSong?.id, lyrics]);
 
   const coverUrl = useMemo(() => {
     if (!currentSong?.cover) return null;
@@ -382,9 +385,9 @@ export default function Player() {
     ? [`${visualizerColor}33`, `${visualizerColor}66`, `${visualizerColor}99`]
     : baseColor
       ? [
-        `rgba(${baseColor.r}, ${baseColor.g}, ${baseColor.b}, 0.25)`,
-        `rgba(${baseColor.r}, ${baseColor.g}, ${baseColor.b}, 0.5)`,
-        `rgba(${baseColor.r}, ${baseColor.g}, ${baseColor.b}, 0.75)`
+        `rgba(${baseColor.r}, ${baseColor.g}, ${baseColor.b}, 0.4)`,
+        `rgba(${baseColor.r}, ${baseColor.g}, ${baseColor.b}, 0.8)`,
+        `rgba(${baseColor.r}, ${baseColor.g}, ${baseColor.b}, 1)`
       ]
       : undefined;
 
@@ -431,7 +434,7 @@ export default function Player() {
   const handleShare = async () => {
     if (!currentSong) return;
     // Use the new smart share landing page
-    const url = `https://api.kreewaux.xyz/share/song/${currentSong.id}`;
+    const url = `${window.location.origin}/song/${currentSong.id}`;
     try {
       if (navigator.share) {
         await navigator.share({
@@ -493,9 +496,9 @@ export default function Player() {
           </div>
 
           {/* VISUALIZER - Matches Desktop (Clean) */}
-          {showVisualizer && visualizerColors && (
+          {showVisualizer && visualizerColors && !showDashboard && (
             <Visualizer
-              className="absolute bottom-0 left-0 w-full h-[35%] pointer-events-none z-0"
+              className="absolute bottom-0 left-0 w-full h-[90%] pointer-events-none z-0"
               colors={visualizerColors}
               mode={visualizerMode}
             />
@@ -504,20 +507,54 @@ export default function Player() {
           {/* DASHBOARD OVERLAY */}
           <AnimatePresence>
             {showDashboard && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="absolute inset-0 z-[60] bg-black/60 backdrop-blur-xl pt-safe flex flex-col"
-              >
-                <div className="w-full flex-1">
-                  <AudioDashboard
-                    className="w-full h-full"
-                    color={uiColor}
-                    onClose={() => setShowDashboard(false)}
-                  />
-                </div>
-              </motion.div>
+              <>
+                {/* 🔥 BACKGROUND DIM LAYER */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="absolute inset-0 bg-black/50 backdrop-blur-sm z-[55]"
+                  onClick={() => setShowDashboard(false)}
+                />
+
+                {/* 🎧 BOTTOM SHEET */}
+                <motion.div
+                  initial={{ y: "100%" }}
+                  animate={{ y: 0 }}
+                  exit={{ y: "100%" }}
+                  transition={{ type: "spring", damping: 25, stiffness: 250 }}
+                  drag={!showDashboard ? "y" : false}
+                  dragConstraints={{ top: 0, bottom: 0 }}
+                  dragElastic={{ bottom: 0.3 }}
+                  onPointerDown={(e) => e.stopPropagation()}
+                  onDragEnd={(_, info) => {
+                    if (info.offset.y > 120 || info.velocity.y > 500) {
+                      setShowDashboard(false);
+                    }
+                  }}
+                  className="
+                    absolute bottom-0 left-0 right-0 
+                    h-[min(75%, 500px)] z-[60] 
+                    bg-[#0a0a0a]/95 backdrop-blur-2xl
+                    rounded-t-3xl border-t border-white/10
+                    shadow-[0_-20px_60px_rgba(0,0,0,0.9)]
+                    flex flex-col
+                  "
+                >
+                  {/* 🧲 HANDLE BAR */}
+                  <div className="w-10 h-1 bg-white/20 rounded-full mx-auto my-3" />
+
+                  {/* 📀 DASHBOARD CONTENT */}
+                  <div className="flex-1 overflow-hidden pb-4">
+                    <AudioDashboard
+                      className="w-full h-full"
+                      color={uiColor}
+                      onClose={() => setShowDashboard(false)}
+                    />
+                  </div>
+                </motion.div>
+              </>
             )}
           </AnimatePresence>
 
@@ -598,6 +635,19 @@ export default function Player() {
                     {currentSong.artist}
                   </p>
                 </div>
+
+                {/* LIKE BUTTON FIX */}
+                <button
+                  onClick={toggleLike}
+                  className="p-2 transition-transform active:scale-90"
+                >
+                  <Heart
+                    className={cn(
+                      "h-7 w-7 transition-colors drop-shadow-md",
+                      liked ? "fill-white text-white" : "text-white/50 hover:text-white"
+                    )}
+                  />
+                </button>
               </div>
 
               {/* Progress - White Bar */}
@@ -654,41 +704,72 @@ export default function Player() {
               {/* Volume Slider REMOVED */}
 
               {/* Bottom Actions: Lyrics, Airplay, List */}
-              <div className="flex justify-between px-6 pt-2">
-                <button
-                  onClick={() => setShowLyrics(!showLyrics)}
-                  className={cn("p-3 rounded-xl transition-colors", showLyrics ? "bg-white/20 text-white" : "text-white/50 hover:text-white")}
+              <div className="flex justify-center pt-4">
+                <div
+                  className="
+                flex items-center justify-between gap-6
+                px-6 py-3
+                rounded-2xl
+                bg-white/5 backdrop-blur-2xl
+                border border-white/10
+                shadow-[0_8px_30px_rgba(0,0,0,0.3)]
+              "
                 >
-                  <div className="relative">
+                  <button
+                    onClick={() => setShowLyrics(!showLyrics)}
+                    className={cn(
+                      "p-3 rounded-xl transition-colors",
+                      showLyrics
+                        ? "bg-white/20 text-white"
+                        : "text-white/50 hover:text-white"
+                    )}
+                  >
                     <Mic2 className="h-6 w-6" />
-                  </div>
-                </button>
+                  </button>
 
-                <button
-                  onClick={handleShare}
-                  className="p-3 text-white/50 hover:text-white transition-colors"
-                >
-                  <Share2 className="h-6 w-6" />
-                </button>
+                  <button
+                    onClick={handleShare}
+                    className="p-3 text-white/50 hover:text-white transition-colors"
+                  >
+                    <Share2 className="h-6 w-6" />
+                  </button>
 
-                {/* Cast Button (UI Only) */}
-                <button
-                  onClick={handleCast}
-                  className="p-3 text-white/50 hover:text-white transition-colors"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6"><path d="M2 16.1A5 5 0 0 1 5.9 20M2 12.05A9 9 0 0 1 9.95 20M2 8V6a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-6" /><line x1="2" x2="2.01" y1="20" y2="20" /></svg>
-                </button>
+                  <button
+                    onClick={handleCast}
+                    className="p-3 text-white/50 hover:text-white transition-colors"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="h-6 w-6"
+                    >
+                      <path d="M2 16.1A5 5 0 0 1 5.9 20M2 12.05A9 9 0 0 1 9.95 20M2 8V6a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-6" />
+                      <line x1="2" x2="2.01" y1="20" y2="20" />
+                    </svg>
+                  </button>
 
-                {/* Queue Button - Functional */}
-                <button
-                  onClick={() => {
-                    setShowDashboard(!showDashboard);
-                    if (!showDashboard) setShowLyrics(false);
-                  }}
-                  className={cn("p-3 rounded-xl transition-colors", showDashboard ? "bg-white/20 text-white" : "text-white/50 hover:text-white")}
-                >
-                  <ListMusic className="h-6 w-6" />
-                </button>
+                  <button
+                    onClick={() => {
+                      setShowDashboard(!showDashboard);
+                      if (!showDashboard) setShowLyrics(false);
+                    }}
+                    className={cn(
+                      "p-3 rounded-xl transition-colors",
+                      showDashboard
+                        ? "bg-white/20 text-white"
+                        : "text-white/50 hover:text-white"
+                    )}
+                  >
+                    <ListMusic className="h-6 w-6" />
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -698,7 +779,35 @@ export default function Player() {
     </AnimatePresence >
   )
 
-  const MiniPlayer = (
+  return (
+    <>
+      <MiniPlayerComponent
+        currentSong={currentSong} coverUrl={coverUrl} uiColor={uiColor}
+        isPlaying={isPlaying} togglePlay={togglePlay} next={next} prev={prev}
+        setExpanded={setExpanded}
+      />
+      <ExpandedPlayerComponent
+        currentSong={currentSong} coverUrl={coverUrl} uiColor={uiColor}
+        isPlaying={isPlaying} progress={progress} duration={duration}
+        togglePlay={togglePlay} next={next} prev={prev}
+        showLyrics={showLyrics} setShowLyrics={setShowLyrics}
+        showDashboard={showDashboard} setShowDashboard={setShowDashboard}
+        visualizerColors={visualizerColors} visualizerMode={visualizerMode}
+        showVisualizer={showVisualizer} handleSeek={handleSeek} handleSeekCommit={handleSeekCommit}
+        isDragging={isDragging} localProgress={localProgress}
+        handleShare={handleShare} handleCast={handleCast}
+        expanded={expanded} setExpanded={setExpanded}
+        liked={liked} toggleLike={toggleLike} lyrics={lyrics}
+      />
+    </>
+  )
+}
+
+// Memoized Mini Player
+const MiniPlayerComponent = memo(({
+  currentSong, coverUrl, uiColor, isPlaying, togglePlay, next, prev, setExpanded
+}: any) => {
+  return (
     <motion.div
       initial={{ y: 20, opacity: 0 }}
       animate={{ y: 0, opacity: 1, x: 0 }}
@@ -727,13 +836,7 @@ export default function Player() {
         />
       )}
 
-      {/* Top Border Glow from Artwork Color */}
-      <div
-        className="absolute top-0 left-0 right-0 h-[1px] opacity-50"
-        style={{
-          background: `linear-gradient(90deg, transparent, ${uiColor}, transparent)`
-        }}
-      />
+
 
       <div className="h-12 w-12 rounded-[8px] overflow-hidden shrink-0 relative mr-4 shadow-lg">
         {coverUrl ? (
@@ -758,11 +861,331 @@ export default function Player() {
       </div>
     </motion.div>
   )
+});
 
+// Memoized Expanded Player
+const ExpandedPlayerComponent = memo(({
+  currentSong, coverUrl, uiColor, isPlaying, progress, duration,
+  togglePlay, next, prev, showLyrics, setShowLyrics,
+  showDashboard, setShowDashboard, visualizerColors, visualizerMode,
+  showVisualizer, handleSeek, handleSeekCommit, isDragging, localProgress,
+  handleShare, handleCast, expanded, setExpanded, liked, toggleLike, lyrics
+}: any) => {
   return (
-    <>
-      {MiniPlayer}
-      {ExpandedPlayer}
-    </>
+    <AnimatePresence>
+      {expanded && (
+        <motion.div
+          key="expanded"
+          initial={{ opacity: 0, y: "100%" }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: "100%" }}
+          transition={{ type: "spring", damping: 30, stiffness: 300 }}
+          drag="y"
+          dragConstraints={{ top: 0, bottom: 0 }}
+          dragElastic={{ top: 0, bottom: 0.2 }} // Only pull down
+          onDragEnd={(_, info) => {
+            if (info.offset.y > 150 || info.velocity.y > 500) {
+              setExpanded(false);
+            }
+          }}
+          className="fixed inset-0 z-50 flex flex-col bg-[#050505] pt-safe"
+        >
+          {/* BACKGROUND - Blurred Cover Image */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <div className="absolute inset-0 bg-black" />
+            {coverUrl && (
+              <motion.img
+                key={coverUrl}
+                src={coverUrl}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 0.6 }}
+                transition={{ duration: 1 }}
+                className="w-full h-full object-cover blur-[80px] scale-125 opacity-50"
+              />
+            )}
+            <div className="absolute inset-0 bg-black/40" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-transparent" />
+          </div>
+
+          {/* VISUALIZER - Matches Desktop (Clean) */}
+          {showVisualizer && visualizerColors && !showDashboard && (
+            <Visualizer
+              className="absolute bottom-0 left-0 w-full h-[90%] pointer-events-none z-0"
+              colors={visualizerColors}
+              mode={visualizerMode}
+            />
+          )}
+
+          {/* DASHBOARD OVERLAY */}
+          <AnimatePresence>
+            {showDashboard && (
+              <>
+                {/* 🔥 BACKGROUND DIM LAYER */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="absolute inset-0 bg-black/50 backdrop-blur-sm z-[55]"
+                  onClick={() => setShowDashboard(false)}
+                />
+
+                {/* 🎧 BOTTOM SHEET */}
+                <motion.div
+                  initial={{ y: "100%" }}
+                  animate={{ y: 0 }}
+                  exit={{ y: "100%" }}
+                  transition={{ type: "spring", damping: 25, stiffness: 250 }}
+                  drag={!showDashboard ? "y" : false}
+                  dragConstraints={{ top: 0, bottom: 0 }}
+                  dragElastic={{ bottom: 0.3 }}
+                  onPointerDown={(e) => e.stopPropagation()}
+                  onDragEnd={(_, info) => {
+                    if (info.offset.y > 120 || info.velocity.y > 500) {
+                      setShowDashboard(false);
+                    }
+                  }}
+                  className="
+                    absolute bottom-0 left-0 right-0 
+                    h-[min(75%, 500px)] z-[60] 
+                    bg-[#0a0a0a]/95 backdrop-blur-2xl
+                    rounded-t-3xl border-t border-white/10
+                    shadow-[0_-20px_60px_rgba(0,0,0,0.9)]
+                    flex flex-col
+                  "
+                >
+                  {/* 🧲 HANDLE BAR */}
+                  <div className="w-10 h-1 bg-white/20 rounded-full mx-auto my-3" />
+
+                  {/* 📀 DASHBOARD CONTENT */}
+                  <div className="flex-1 overflow-hidden pb-4">
+                    <AudioDashboard
+                      className="w-full h-full"
+                      color={uiColor}
+                      onClose={() => setShowDashboard(false)}
+                    />
+                  </div>
+                </motion.div>
+              </>
+            )}
+          </AnimatePresence>
+
+          {/* LYRICS OVERLAY - Modern Design */}
+          <AnimatePresence>
+            {showLyrics && (
+              <LyricsOverlay
+                lyrics={lyrics}
+                progress={progress}
+                onSeek={handleSeekCommit}
+                coverUrl={coverUrl}
+                uiColor={uiColor}
+              />
+            )}
+          </AnimatePresence>
+
+          {/* Lyrics Close Button - Floating */}
+          {showLyrics && (
+            <motion.button
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              onClick={() => setShowLyrics(false)}
+              className="fixed top-4 right-4 z-[60] p-3 rounded-full bg-black/50 backdrop-blur-xl hover:bg-black/70 transition-colors border border-white/10"
+            >
+              <X className="h-5 w-5 text-white" />
+            </motion.button>
+          )}
+
+          {/* CONTENT CONTAINER - Flex Column */}
+          <div className="relative z-20 flex flex-col h-full w-full px-6 pb-12">
+
+            {/* 1. TOP BAR - Drag Handle Only */}
+            <div className="flex items-center justify-center h-8 shrink-0 w-full mt-4 mb-4">
+              <div className="w-10 h-1 rounded-full bg-white/20" />
+            </div>
+
+            {/* 2. ARTWORK */}
+            <div className="flex-1 flex items-center justify-center min-h-0 py-4 relative">
+              <motion.div
+                className="relative aspect-square w-full max-w-[340px] rounded-[18px] z-10"
+                style={{
+                  boxShadow: `0 10px 40px -10px ${uiColor}50`
+                }}
+                animate={{
+                  scale: isPlaying ? 1.02 : 1,
+                }}
+                transition={{
+                  duration: 0.5,
+                  ease: "easeOut"
+                }}
+              >
+                <div className="absolute inset-0 rounded-[18px] overflow-hidden bg-[#282828] border border-white/5">
+                  {coverUrl ? (
+                    <img
+                      src={coverUrl}
+                      alt={currentSong.title}
+                      className="w-full h-full object-cover"
+                      draggable={false}
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-6xl text-white/20">♪</div>
+                  )}
+                </div>
+              </motion.div>
+            </div>
+
+            {/* 3. TRACK INFO & CONTROLS */}
+            <div className="shrink-0 flex flex-col mt-6">
+
+              {/* Title & More Button Row */}
+              <div className="flex items-center justify-between mb-6 px-1">
+                <div className="flex flex-col text-left overflow-hidden mr-4">
+                  <h2 className="text-[22px] font-bold text-white truncate leading-tight tracking-tight mb-1">
+                    {currentSong.title}
+                  </h2>
+                  <p className="text-[18px] text-white/60 truncate font-medium">
+                    {currentSong.artist}
+                  </p>
+                </div>
+
+                {/* LIKE BUTTON FIX */}
+                <button
+                  onClick={toggleLike}
+                  className="p-2 transition-transform active:scale-90"
+                >
+                  <Heart
+                    className={cn(
+                      "h-7 w-7 transition-colors drop-shadow-md",
+                      liked ? "fill-white text-white" : "text-white/50 hover:text-white"
+                    )}
+                  />
+                </button>
+              </div>
+
+              {/* Progress - White Bar */}
+              <div className="mb-6 relative z-30">
+                <div
+                  className="relative group touch-none"
+                  onPointerDown={(e) => e.stopPropagation()}
+                >
+                  <Slider
+                    defaultValue={[0]}
+                    value={[isDragging ? localProgress : progress]}
+                    max={duration || 100}
+                    step={1}
+                    onValueChange={handleSeek}
+                    onValueCommit={handleSeekCommit}
+                    className="cursor-pointer h-5 flex items-center"
+                    color="#ffffff"
+                  />
+                </div>
+                <div className="flex justify-between text-[11px] font-medium text-white/40 mt-1 tabular-nums font-mono">
+                  <span>{formatTime(isDragging ? localProgress : progress)}</span>
+                  <span>-{formatTime((duration || 0) - (isDragging ? localProgress : progress))}</span>
+                </div>
+              </div>
+
+              {/* Main Controls - Centered & Large */}
+              <div className="flex items-center justify-center gap-10 mb-8">
+                <button
+                  onClick={prev}
+                  className="text-white/90 hover:text-white active:scale-90 transition-transform"
+                >
+                  <SkipBack className="h-10 w-10 fill-current" />
+                </button>
+
+                <button
+                  onClick={togglePlay}
+                  className="w-[72px] h-[72px] rounded-full flex items-center justify-center text-white active:scale-95 transition-transform"
+                >
+                  {isPlaying ? (
+                    <Pause className="h-[72px] w-[72px] fill-current" />
+                  ) : (
+                    <Play className="h-[72px] w-[72px] fill-current" />
+                  )}
+                </button>
+
+                <button
+                  onClick={next}
+                  className="text-white/90 hover:text-white active:scale-90 transition-transform"
+                >
+                  <SkipForward className="h-10 w-10 fill-current" />
+                </button>
+              </div>
+
+              {/* Bottom Actions: Lyrics, Airplay, List */}
+              <div className="flex justify-center pt-4">
+                <div
+                  className="
+                flex items-center justify-between gap-6
+                px-6 py-3
+                rounded-2xl
+                bg-white/5 backdrop-blur-2xl
+                border border-white/10
+                shadow-[0_8px_30px_rgba(0,0,0,0.3)]
+              "
+                >
+                  <button
+                    onClick={() => setShowLyrics(!showLyrics)}
+                    className={cn(
+                      "p-3 rounded-xl transition-colors",
+                      showLyrics
+                        ? "bg-white/20 text-white"
+                        : "text-white/50 hover:text-white"
+                    )}
+                  >
+                    <Mic2 className="h-6 w-6" />
+                  </button>
+
+                  <button
+                    onClick={handleShare}
+                    className="p-3 text-white/50 hover:text-white transition-colors"
+                  >
+                    <Share2 className="h-6 w-6" />
+                  </button>
+
+                  <button
+                    onClick={handleCast}
+                    className="p-3 text-white/50 hover:text-white transition-colors"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="h-6 w-6"
+                    >
+                      <path d="M2 16.1A5 5 0 0 1 5.9 20M2 12.05A9 9 0 0 1 9.95 20M2 8V6a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-6" />
+                      <line x1="2" x2="2.01" y1="20" y2="20" />
+                    </svg>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setShowDashboard(!showDashboard);
+                      if (!showDashboard) setShowLyrics(false);
+                    }}
+                    className={cn(
+                      "p-3 rounded-xl transition-colors",
+                      showDashboard
+                        ? "bg-white/20 text-white"
+                        : "text-white/50 hover:text-white"
+                    )}
+                  >
+                    <ListMusic className="h-6 w-6" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </motion.div >
+      )
+      }
+    </AnimatePresence >
   )
-}
+});

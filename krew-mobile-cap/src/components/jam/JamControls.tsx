@@ -34,7 +34,7 @@ export function JamControls({ className }: JamControlsProps) {
                 <div className="flex items-center gap-3">
                     <div className={cn(
                         "w-3 h-3 rounded-full animate-pulse",
-                        connectedJam ? "bg-green-500 shadow-[0_0_10px_#22c55e]" : "bg-white/20"
+                        connectedJam ? "bg-blue-500 shadow-[0_0_10px_#3b82f6]" : "bg-white/20"
                     )} />
                     <div>
                         <h2 className="text-lg font-bold">Session Status</h2>

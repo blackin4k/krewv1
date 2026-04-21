@@ -78,7 +78,7 @@ export default function Jam() {
             className="absolute top-[60px] left-0 w-full z-10 px-4 pointer-events-none"
           >
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-black/40 backdrop-blur-md rounded-full border border-white/5 text-[10px] text-white/70">
-              <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
               {listeners.length} listening now
             </div>
           </motion.div>

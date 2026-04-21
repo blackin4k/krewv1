@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "@capacitor/filesystem": "^8.1.2",
+    "@capacitor/preferences": "^8.0.1"
+  }
+}

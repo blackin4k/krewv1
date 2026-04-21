@@ -83,8 +83,8 @@ export const systemApi = {
 export const songsApi = {
   getAll: (page = 1, limit = 30, sort?: string) =>
     api.get(`/songs?page=${page}&limit=${limit}${sort ? `&sort=${sort}` : ''}`),
-  search: (q: string, genre?: string, sort?: string) =>
-    api.get('/search', { params: { q, genre, sort } }),
+  search: (q: string, genre?: string, sort?: string, config?: import('axios').AxiosRequestConfig) =>
+    api.get('/search', { params: { q, genre, sort }, ...config }),
   getTrending: () => api.get('/search/trending'),
   stream: (id: number) => `${API_URL}/songs/${id}/stream`,
   like: (id: number) => api.post(`/songs/${id}/like`),

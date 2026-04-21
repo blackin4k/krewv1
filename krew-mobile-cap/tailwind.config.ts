@@ -25,8 +25,8 @@ export default {
         background: "#121212", // Primary Background
         foreground: "#FFFFFF", // Primary Text
         primary: {
-          DEFAULT: "#1DB954", // Spotify Green
-          foreground: "#121212",
+          DEFAULT: "#3b82f6", // Krew Blue
+          foreground: "#FFFFFF",
         },
         secondary: {
           DEFAULT: "#181818", // Secondary Surface
@@ -41,8 +41,8 @@ export default {
           foreground: "#B3B3B3",
         },
         accent: {
-          DEFAULT: "#1DB954",
-          foreground: "#121212",
+          DEFAULT: "#3b82f6",
+          foreground: "#FFFFFF",
         },
         popover: {
           DEFAULT: "#181818",
@@ -52,15 +52,15 @@ export default {
           DEFAULT: "#181818",
           foreground: "#FFFFFF",
         },
-        sidebar: {
+          sidebar: {
           DEFAULT: "#121212", // Mobile sidebar usually matches background or slightly elevated
           foreground: "#B3B3B3",
-          primary: "#1DB954",
+          primary: "#3b82f6",
           "primary-foreground": "#FFFFFF",
           accent: "#121212",
           "accent-foreground": "#FFFFFF",
           border: "#181818",
-          ring: "#1DB954",
+          ring: "#3b82f6",
         },
         surface: "#181818",
         elevator: "#1E1E1E", // Elevated Card Surface

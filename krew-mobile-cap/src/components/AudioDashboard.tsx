@@ -19,7 +19,7 @@ interface QueueDisplayProps {
 }
 
 const QueueDisplay: React.FC<QueueDisplayProps> = ({ className, color = '#ffffff', onClose }) => {
-    const { currentSong, isPlaying } = usePlayerStore();
+    const { currentSong, isPlaying, playSong } = usePlayerStore();
     const [queue, setQueue] = useState<QueueItem[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -27,6 +27,7 @@ const QueueDisplay: React.FC<QueueDisplayProps> = ({ className, color = '#ffffff
         try {
             setLoading(true);
             const res = await playerApi.queue();
+            console.log("QUEUE FROM BACKEND:", res.data.queue);
             setQueue(res.data.queue || []);
         } catch (e) {
             console.error("Failed to fetch queue", e);
@@ -38,6 +39,15 @@ const QueueDisplay: React.FC<QueueDisplayProps> = ({ className, color = '#ffffff
     useEffect(() => {
         fetchQueue();
     }, [currentSong?.id]); // Refetch when song changes
+
+    const handleReorder = async (newQueue: QueueItem[]) => {
+        setQueue(newQueue);
+        try {
+            await playerApi.modifyQueue('reorder', { song_ids: newQueue.map(s => s.id) });
+        } catch (e) {
+            console.error("Failed to save new queue order", e);
+        }
+    };
 
     // Filter to show "Playing Next" - typically songs after the current one
     // But for now, let's show the whole queue and highlight current
@@ -82,7 +92,7 @@ const QueueDisplay: React.FC<QueueDisplayProps> = ({ className, color = '#ffffff
                 ) : queue.length === 0 ? (
                     <div className="text-white/40 text-center py-10">Queue is empty</div>
                 ) : (
-                    <div className="space-y-1">
+                    <Reorder.Group axis="y" values={queue} onReorder={handleReorder} className="space-y-1">
                         {queue.map((song, i) => {
                             const isCurrent = song.id === currentSong?.id;
 
@@ -90,7 +100,9 @@ const QueueDisplay: React.FC<QueueDisplayProps> = ({ className, color = '#ffffff
                             const activeStyle = isCurrent ? { color: color } : {};
 
                             return (
-                                <motion.div
+                                <Reorder.Item
+                                    value={song}
+                                    id={song.id.toString()}
                                     key={`${song.id}-${i}`}
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
@@ -99,14 +111,11 @@ const QueueDisplay: React.FC<QueueDisplayProps> = ({ className, color = '#ffffff
                                         "flex items-center gap-3 p-2 rounded-xl transition-colors group",
                                         isCurrent ? "bg-white/10" : "hover:bg-white/5"
                                     )}
-                                    onTouchEnd={() => {
-                                        if (!isCurrent) {
-                                            playerApi.play(song.id);
-                                        }
-                                    }}
+                                    // onClick handles playback, but dragging shouldn't trigger click. 
+                                    // framer-motion Reorder handles this usually.
                                     onClick={() => {
                                         if (!isCurrent) {
-                                            playerApi.play(song.id);
+                                            playSong(song as any);
                                         }
                                     }}
                                 >
@@ -143,10 +152,10 @@ const QueueDisplay: React.FC<QueueDisplayProps> = ({ className, color = '#ffffff
                                     <div className="opacity-0 group-hover:opacity-100 transition-opacity p-2 text-white/40">
                                         <GripVertical className="w-5 h-5" />
                                     </div>
-                                </motion.div>
+                                </Reorder.Item>
                             );
                         })}
-                    </div>
+                    </Reorder.Group>
                 )}
             </div>
         </div>

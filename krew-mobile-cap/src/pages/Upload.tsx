@@ -374,14 +374,14 @@ const Upload = () => {
               </div>
             </Card>
 
-            <Card className="p-6 bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800">
+            <Card className="p-6 bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800">
               <div className="flex gap-3">
-                <Check className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+                <Check className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
                 <div>
-                  <h3 className="font-semibold text-green-900 dark:text-green-100 mb-2">
+                  <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
                     Application Guidelines
                   </h3>
-                  <ul className="text-sm text-green-800 dark:text-green-200 space-y-1">
+                  <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
                     <li>✓ Original content only</li>
                     <li>✓ Professional bio required</li>
                     <li>✓ Active social presence helps</li>
@@ -403,7 +403,7 @@ const Upload = () => {
         <div className="flex items-center gap-3 mb-2">
           <UploadIcon className="w-8 h-8 text-primary" />
           <h1 className="text-4xl font-bold">Upload Music</h1>
-          <span className="ml-2 px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-sm font-medium rounded-full flex items-center gap-1">
+          <span className="ml-2 px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-sm font-medium rounded-full flex items-center gap-1">
             <Check className="w-4 h-4" />
             Verified Artist
           </span>
@@ -588,14 +588,14 @@ const Upload = () => {
                     className="flex items-center gap-3"
                   >
                     {upload.status === 'success' ? (
-                      <Check className="w-5 h-5 text-green-500 flex-shrink-0" />
+                      <Check className="w-5 h-5 text-blue-500 flex-shrink-0" />
                     ) : (
                       <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
                     )}
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">{upload.fileName}</p>
                       {upload.message && (
-                        <p className={`text-xs ${upload.status === 'success' ? 'text-green-600' : 'text-red-600'}`}>
+                        <p className={`text-xs ${upload.status === 'success' ? 'text-blue-600' : 'text-red-600'}`}>
                           {upload.message}
                         </p>
                       )}

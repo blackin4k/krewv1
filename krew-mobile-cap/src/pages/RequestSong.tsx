@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { API_URL } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -8,19 +9,47 @@ import { useToast } from '@/hooks/use-toast';
 const RequestSong = () => {
     const { toast } = useToast();
     const [loading, setLoading] = useState(false);
+    const [song, setSong] = useState('');
+    const [artist, setArtist] = useState('');
+    const [link, setLink] = useState('');
+    const [notes, setNotes] = useState('');
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!song.trim()) return;
+
         setLoading(true);
-        // Simulate API call
-        setTimeout(() => {
-            setLoading(false);
+
+        try {
+            const res = await fetch(`${API_URL}/request-song`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ song, artist, link, notes })
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                throw new Error(data.error || 'Something went wrong');
+            }
+
             toast({
-                title: "Request Sent",
+                title: "Request Sent 🎧",
                 description: "We'll verify and add it shortly!",
             });
-            // Reset form if needed
-        }, 1500);
+
+            setSong('');
+            setArtist('');
+            setLink('');
+            setNotes('');
+        } catch (err: any) {
+            toast({
+                title: err.message || "Failed to send",
+                variant: "destructive",
+            });
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -41,6 +70,8 @@ const RequestSong = () => {
                             placeholder="Enter song title"
                             className="bg-[#151518] border-none rounded-2xl h-12 px-4 text-sm focus-visible:ring-1 focus-visible:ring-[#6F8CFF]"
                             required
+                            value={song}
+                            onChange={(e) => setSong(e.target.value)}
                         />
                     </div>
 
@@ -49,6 +80,8 @@ const RequestSong = () => {
                         <Input
                             placeholder="Artist name"
                             className="bg-[#151518] border-none rounded-2xl h-12 px-4 text-sm focus-visible:ring-1 focus-visible:ring-[#6F8CFF]"
+                            value={artist}
+                            onChange={(e) => setArtist(e.target.value)}
                         />
                     </div>
 
@@ -57,6 +90,8 @@ const RequestSong = () => {
                         <Input
                             placeholder="Paste playlist link"
                             className="bg-[#151518] border-none rounded-2xl h-12 px-4 text-sm focus-visible:ring-1 focus-visible:ring-[#6F8CFF]"
+                            value={link}
+                            onChange={(e) => setLink(e.target.value)}
                         />
                     </div>
 
@@ -65,15 +100,17 @@ const RequestSong = () => {
                         <Textarea
                             placeholder="Anything we should know?"
                             className="bg-[#151518] border-none rounded-2xl min-h-[90px] px-4 py-3 text-sm focus-visible:ring-1 focus-visible:ring-[#6F8CFF] resize-none"
+                            value={notes}
+                            onChange={(e) => setNotes(e.target.value)}
                         />
                     </div>
 
                     <Button
                         type="submit"
-                        disabled={loading}
+                        disabled={loading || !song.trim()}
                         className="w-full h-14 rounded-[22px] bg-[#6F8CFF] hover:bg-[#5a75e6] text-white font-semibold text-[15px] mt-2 transition-transform active:scale-[0.98]"
                     >
-                        {loading ? 'Sending...' : 'Submit Request'}
+                        {loading ? 'Sending 🎧...' : 'Submit Request'}
                     </Button>
 
                 </form>
